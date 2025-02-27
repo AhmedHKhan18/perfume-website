@@ -144,7 +144,7 @@ export default function ProductsPage() {
           <span className="text-gray-400">Filter by:</span>
           {Object.entries(filterOptions).map(([category, options]) => (
             <Select key={category}>
-              <SelectTrigger className="w-[115px] bg-black border-none outline-none">
+              <SelectTrigger className="w-auto bg-black border-none outline-none">
                 <SelectValue placeholder={category} />
               </SelectTrigger>
               <SelectContent>
@@ -159,7 +159,7 @@ export default function ProductsPage() {
         </div>
 
         <Select>
-          <SelectTrigger className="w-[115px] bg-black border-none outline-none">
+          <SelectTrigger className="w-auto bg-black border-none outline-none">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
@@ -175,7 +175,7 @@ export default function ProductsPage() {
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map((product, index) => (
-        <Card products={product} index={index}/>
+        <Card products={product} key={index} index={index}/>
       ))}
       </div>
 

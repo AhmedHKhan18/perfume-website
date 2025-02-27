@@ -1,30 +1,54 @@
 'use client'
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-  } from "@/components/ui/accordion"
-  import Image from "next/image"
+
+import Image from "next/image"
 import { Star, ChevronLeft, ChevronRight } from "lucide-react"
 import perfume from '@/app/assets/perfume.png'
 import { useSearchParams } from "next/navigation"
 import Card from "@/app/components/ProductCard"
+import Accordation from "@/app/components/Accordation"
+import { useEffect, useState } from "react"
   
 
 export default function Product(){
+  const [cart, setCart] = useState([])
   const searchParams = useSearchParams();
   const name = searchParams.get("name"); 
   const price = searchParams.get("price");
   const image = searchParams.get('image');
+  const review = searchParams.get('reviews');
+  const rating = searchParams.get('rating');
   const id = searchParams.get("id");
   const product = {
     name: name || 'Unknown',
     price: price || 40,
     image: image || '',
+    reviews: review,
+    rating: rating,
     description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam tincidunt erat enim. Lorem ipsum dolor sit amet, consectetur adipiscing'
   }
-  console.log("🚀 ~ Product ~ product.image:", product.image)
+
+  useEffect(() => {
+    const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+    setCart(savedCart)
+  },[]);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  },[cart])
+
+  const handleAddToCart = ()=> {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((item) => item.id === id);
+      if(existingItem) {
+        return prevCart.map((item) =>
+        item.id === id
+        ? {...item, quantity: item.quantity + 1}
+        : item
+        );
+      }
+      return [...prevCart, {...product, quantity: 1}];
+    });
+  }
 
 const products = [
   {
@@ -70,17 +94,17 @@ const products = [
       <div className='w-full lg:sticky top-0'>
         <div className='flex flex-row gap-2'>
           <div className='flex flex-col gap-2 w-16 max-sm:w-14 shrink-0'>
-            <Image src={product.image} alt='Product1'
+            <Image src={product.image} alt='Product1' width={100} height={100}
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-black' />
-            <Image src={product.image} alt='Product2'
+            <Image src={product.image} alt='Product2' width={100} height={100}
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
-            <Image src={product.image} alt='Product3'
+            <Image src={product.image} alt='Product3' width={100} height={100}
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
-            <Image src={product.image} alt='Product4'
+            <Image src={product.image} alt='Product4' width={100} height={100}
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
           </div>
           <div className='flex-1'>
-            <Image src={product.image} alt='Product'
+            <Image src={product.image} alt='Product' width={100} height={100}
               className='w-full aspect-[548/712] object-cover' />
           </div>
         </div>
@@ -89,30 +113,30 @@ const products = [
       <div className='w-full'>
         <div>
           <h3 className='text-lg sm:text-xl font-bold text-[#E5A95E]'>{product.name}</h3>
-          <p className='text-white mt-1 text-sm'>Women Embroidered Georgette A-line Kurta With Attached Dupatta (Maroon)
+          <p className='text-white mt-1 text-sm'>{product.description}
           </p>
           <div className='flex items-center flex-wrap gap-4 mt-4'>
             <h4 className='text-[#E5A95E] text-2xl sm:text-3xl font-bold'>Rs:{product.price}</h4>
-            <p className='text-white text-lg'><strike>$16</strike> <span className='text-sm ml-1.5'>Tax included</span></p>
+            <p className='text-white text-lg'><strike>Rs:200</strike> <span className='text-sm ml-1.5'>Tax included</span></p>
           </div>
 
           <div className='flex items-center gap-4 mt-2'>
             <div className='flex items-center gap-1 text-lg px-2.5 bg-green-600 text-white rounded-full'>
-              <p>4</p>
+              <p>{product.rating}</p>
               <svg className='w-[13px] h-[13px] fill-white' viewBox='0 0 14 13' fill='none'
                 xmlns='http://www.w3.org/2000/svg'>
                 <path
                   d='M7 0L9.4687 3.60213L13.6574 4.83688L10.9944 8.29787L11.1145 12.6631L7 11.2L2.8855 12.6631L3.00556 8.29787L0.342604 4.83688L4.5313 3.60213L7 0Z' />
               </svg>
             </div>
-            <p className='text-white text-sm'>253 ratings and 27 reviews</p>
+            <p className='text-white text-sm'>{product.rating} ratings and {product.reviews} reviews</p>
           </div>
         </div>
 
         <hr className='my-6 border-gray-300' />
 
         <div>
-          <h3 className=' text-lg   sm:text-xl   font-bold   text-[#E5A95E] '>Sizes</h3>
+          {/* <h3 className=' text-lg   sm:text-xl   font-bold   text-[#E5A95E] '>Sizes</h3>
           <div className=' flex   flex-wrap   gap-4   mt-4 '>
             <button type='button'
               className=' w-10   h-9   border   border-gray-300   hover:border-[#E5A95E]   text-sm      flex   items-center   justify-center   shrink-0 '>SM</button>
@@ -122,14 +146,14 @@ const products = [
               className=' w-10   h-9   border   border-gray-300   hover:border-[#E5A95E]   text-sm      flex   items-center   justify-center   shrink-0 '>LG</button>
             <button type='button'
               className=' w-10   h-9   border   border-gray-300   hover:border-[#E5A95E]   text-sm      flex   items-center   justify-center   shrink-0 '>XL</button>
-          </div>
+          </div> */}
 
           <div className=' mt-6   flex   flex-wrap   gap-4 '>
             <button type='button'
-              className=' px-4   py-3   w-[45%]   border   border-gray-300   bg-gray-100   hover:bg-gray-200   text-gray-800   text-sm   font-semibold       '>Add
+              className=' px-4   py-3   w-[45%]    bg-gray-700   hover:bg-gray-800   text-white   text-sm   font-semibold       '>Add
               to wishlist</button>
             <button type='button'
-              className=' px-4   py-3   w-[45%]   border   border-[#E5A95E]   bg-[#E5A95E]   hover:bg-yellow-600   text-white   text-sm   font-semibold       '>Add
+              className=' px-4   py-3   w-[45%]     bg-[#E5A95E]   hover:bg-yellow-600   text-white   text-sm   font-semibold' onClick={handleAddToCart}>Add
               to cart</button>
           </div>
         </div>
@@ -151,26 +175,7 @@ const products = [
 
         <div className="my-6">
           <h3 className=' text-lg   sm:text-xl   font-bold   text-[#E5A95E] '>Product Information</h3>
-          <Accordion type="single" collapsible>
-          <AccordionItem value="item-1">
-          <AccordionTrigger>Product Details</AccordionTrigger>
-          <AccordionContent>
-           Yes. It adheres to the WAI-ARIA design pattern.
-          </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-2">
-          <AccordionTrigger>Vendor Details</AccordionTrigger>
-          <AccordionContent>
-           Yes. It adheres to the WAI-ARIA design pattern.
-          </AccordionContent>
-          </AccordionItem>
-          <AccordionItem value="item-3">
-          <AccordionTrigger>Is it accessible?</AccordionTrigger>
-          <AccordionContent>
-           Yes. It adheres to the WAI-ARIA design pattern.
-          </AccordionContent>
-          </AccordionItem>
-          </Accordion>
+          <Accordation/>
         </div>
         <div>
           <h3 className=' text-lg   sm:text-xl   font-bold   text-[#E5A95E] '>Customer Reviews</h3>
@@ -199,7 +204,7 @@ const products = [
 
           <div className=' flex   items-center   flex-wrap   gap-4   mt-4 '>
             <h4 className=' text-2xl   sm:text-3xl   text-[#E5A95E]   font-semibold '>4.0 / 5</h4>
-            <p className=' text-sm   text-white '>Based on 253 ratings</p>
+            <p className=' text-sm   text-white '>Based on {product.rating} ratings</p>
           </div>
         </div>
 
@@ -234,7 +239,7 @@ const products = [
                   <path
                     d='M7 0L9.4687 3.60213L13.6574 4.83688L10.9944 8.29787L11.1145 12.6631L7 11.2L2.8855 12.6631L3.00556 8.29787L0.342604 4.83688L4.5313 3.60213L7 0Z' />
                 </svg>
-                <p className=' text-xs   text-white   !ml-2 '>2 mont</p>
+                <p className=' text-xs   text-white   !ml-2 '>2 months ago</p>
               </div>
               <p className=' text-sm   text-white   mt-4 '>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
@@ -249,9 +254,9 @@ const products = [
   </div>
   <div className="px-2">
     <h1 className="text-4xl text-center my-10 text-[#E5A95E]">Discover More</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
              {products.map((product, index) => (
-               <Card products={product} index={index}/>
+               <Card products={product} key={index} index={index}/>
              ))}
       </div>
   </div>
