@@ -1,3 +1,4 @@
+'use client'
 import {
     Accordion,
     AccordionContent,
@@ -7,9 +8,23 @@ import {
   import Image from "next/image"
 import { Star, ChevronLeft, ChevronRight } from "lucide-react"
 import perfume from '@/app/assets/perfume.png'
+import { useSearchParams } from "next/navigation"
+import Card from "@/app/components/ProductCard"
   
 
 export default function Product(){
+  const searchParams = useSearchParams();
+  const name = searchParams.get("name"); 
+  const price = searchParams.get("price");
+  const image = searchParams.get('image');
+  const id = searchParams.get("id");
+  const product = {
+    name: name || 'Unknown',
+    price: price || 40,
+    image: image || '',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam tincidunt erat enim. Lorem ipsum dolor sit amet, consectetur adipiscing'
+  }
+  console.log("🚀 ~ Product ~ product.image:", product.image)
 
 const products = [
   {
@@ -55,17 +70,17 @@ const products = [
       <div className='w-full lg:sticky top-0'>
         <div className='flex flex-row gap-2'>
           <div className='flex flex-col gap-2 w-16 max-sm:w-14 shrink-0'>
-            <img src='https://readymadeui.com/images/fashion-img-1.webp' alt='Product1'
+            <Image src={product.image} alt='Product1'
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-black' />
-            <img src='https://readymadeui.com/images/fashion-img-2.webp' alt='Product2'
+            <Image src={product.image} alt='Product2'
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
-            <img src='https://readymadeui.com/images/fashion-img-3.webp' alt='Product3'
+            <Image src={product.image} alt='Product3'
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
-            <img src='https://readymadeui.com/images/fashion-img-4.webp' alt='Product4'
+            <Image src={product.image} alt='Product4'
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
           </div>
           <div className='flex-1'>
-            <img src='https://readymadeui.com/images/fashion-img-1.webp' alt='Product'
+            <Image src={product.image} alt='Product'
               className='w-full aspect-[548/712] object-cover' />
           </div>
         </div>
@@ -73,11 +88,11 @@ const products = [
 
       <div className='w-full'>
         <div>
-          <h3 className='text-lg sm:text-xl font-bold text-[#E5A95E]'>Women Embroidered A-line Kurta</h3>
+          <h3 className='text-lg sm:text-xl font-bold text-[#E5A95E]'>{product.name}</h3>
           <p className='text-white mt-1 text-sm'>Women Embroidered Georgette A-line Kurta With Attached Dupatta (Maroon)
           </p>
           <div className='flex items-center flex-wrap gap-4 mt-4'>
-            <h4 className='text-[#E5A95E] text-2xl sm:text-3xl font-bold'>$12</h4>
+            <h4 className='text-[#E5A95E] text-2xl sm:text-3xl font-bold'>Rs:{product.price}</h4>
             <p className='text-white text-lg'><strike>$16</strike> <span className='text-sm ml-1.5'>Tax included</span></p>
           </div>
 
@@ -232,33 +247,12 @@ const products = [
     </div>
   </div>
   </div>
-  <div>
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product, index) => (
-          <div key={index} className="group">
-            <div className="relative bg-[#121212] rounded-lg p-6 transition-transform duration-300 group-hover:scale-[1.02]">
-              <div className="relative aspect-square mb-4">
-                <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-contain" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">{product.name}</h3>
-              <div className="flex items-center gap-1 mb-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-4 h-4 ${
-                      i < product.rating ? "fill-[#E5A95E] text-[#E5A95E]" : "fill-gray-600 text-gray-600"
-                    }`}
-                  />
-                ))}
-                <span className="text-sm text-gray-400 ml-2">({product.reviews})</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[#E5A95E] font-medium">${product.price.toFixed(2)}</span>
-                <span className="text-sm text-gray-400">{product.volume}</span>
-              </div>
-            </div>
-          </div>
-        ))}
+  <div className="px-2">
+    <h1 className="text-4xl text-center my-10 text-[#E5A95E]">Discover More</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+             {products.map((product, index) => (
+               <Card products={product} index={index}/>
+             ))}
       </div>
   </div>
 </div>

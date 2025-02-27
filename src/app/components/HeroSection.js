@@ -143,7 +143,7 @@ const products = [
   <section className="mb-16 px-16">
         <h2 className="text-[#E5A95E] text-4xl text-center font-medium mb-8">Best selling products</h2>
         {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
         {products.map((product, index) => (
           <div key={index} className="group">
             <div className="relative bg-[#121212] rounded-lg p-6 transition-transform duration-300 group-hover:scale-[1.02]">
@@ -185,23 +185,6 @@ const products = [
       </section>
 
       {/* Sale Banner */}
-      {/* <section className="relative overflow-hidden rounded-lg">
-        <div className="bg-gradient-to-r from-[#1a1a1a] to-black p-8 md:p-12">
-          <div className="max-w-xl">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2">Perfume Year End Sale!</h2>
-            <p className="text-gray-400 text-lg mb-6">Up to 50% OFF</p>
-            <Button className="bg-[#E5A95E] hover:bg-[#D49A4F] text-white px-8 py-3 rounded-md">Shop Now</Button>
-          </div>
-          <div className="absolute right-0 bottom-0 w-1/3 h-full opacity-20">
-            <Image
-              src={perfume}
-              alt="Perfume bottle silhouette"
-              fill
-              className="object-contain"
-            />
-          </div>
-        </div>
-      </section> */}
       <Banner/>
   </div>
   )
