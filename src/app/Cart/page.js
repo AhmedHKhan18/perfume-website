@@ -1,16 +1,19 @@
 'use client'
 import { Minus, Plus, Trash, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Cart(){
     const [cart, setCart] = useState([]);
-    const id = useParams()
+    const [updatequantity, setUpdatequantity] = useState(1);
+    const id = useSearchParams().get('id');
     console.log("🚀 ~ Cart ~ id:", id)
 
-    const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    const subtotalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
     const Shipping = 30
+    const Tax = 20
+    const totalPrice = subtotalPrice + Shipping + Tax
 
 useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -25,6 +28,35 @@ const handleRemoveCart = (e) => {
     localStorage.setItem('cart', JSON.stringify(updatedCart))
 }
 
+const sendOrderNotification = async (orderData) => {
+    try {
+      const response = await fetch('/api/sendEmail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderDetails: orderData }),
+      });
+  
+      if (response.ok) {
+        alert('Order placed successfully, notification sent!');
+      } else {
+        alert('Failed to send notification.');
+      }
+    } catch (error) {
+      console.error('Error sending order notification:', error);
+    }
+  };
+  
+  // Example order object
+  const order = {
+    item: 'Wireless Headphones',
+    quantity: 2,
+    customerName: 'Ahmed',
+    address: '123 Main St, London',
+  };
+  
+  // Call this function after an order is placed
+  sendOrderNotification(order);
+  
 return(
         <div className="font-sans max-w-5xl md:max-w-full mx-auto py-4">
 
@@ -55,16 +87,16 @@ return(
 
                             <button type="button"
                                 className="mt-6 flex items-center px-3 py-1.5 border border-gray-300 text-white text-xs outline-none bg-transparent rounded-md">
-                                <Minus className="w-4"/>
-                                <span className="mx-3 font-bold">{item.quantity}</span>
-                                <Plus className="w-4"/>
+                                <Minus className="w-4" onClick={()=>setUpdatequantity(item.quantity >1 ? item.quantity -- : 1)}/>
+                                <span className="mx-3 font-bold">{updatequantity}</span>
+                                <Plus className="w-4" onClick={()=>setUpdatequantity(item.quantity ++)}/>
                             </button>
                         </div>
                     </div>
                         <hr className="border-gray-300" />
                         </>
                                 )
-                            }):<p>Your Cart is Empty</p>}
+                            }):<p className="text-xl text-white text-center">Your Cart is Empty</p>}
                 </div>
 
                 <div className=" rounded-md p-4 h-max">
@@ -121,16 +153,16 @@ return(
                     </form>
 
                     <ul className="text-white mt-6 space-y-3">
-                        <li className="flex flex-wrap gap-4 text-sm">Subtotal <span className="ml-auto font-bold">Rs:{totalPrice}</span></li>
-                        <li className="flex flex-wrap gap-4 text-sm">Shipping <span className="ml-auto font-bold">Rs:{Shipping}</span></li>
-                        <li className="flex flex-wrap gap-4 text-sm">Tax <span className="ml-auto font-bold">$4.00</span></li>
+                        <li className="flex flex-wrap gap-4 text-sm">Subtotal <span className="ml-auto font-bold">Rs:{subtotalPrice}</span></li>
+                        <li className="flex flex-wrap gap-4 text-sm">Shipping <span className="ml-auto font-bold">{cart.length ? `Rs:${Shipping}`: 0}</span></li>
+                        <li className="flex flex-wrap gap-4 text-sm">Tax <span className="ml-auto font-bold">Rs:{Tax}</span></li>
                         <hr className="border-gray-300" />
                         <li className="flex flex-wrap gap-4 text-sm font-bold">Total <span className="ml-auto">Rs:{totalPrice.toFixed(2)}</span></li>
                     </ul>
 
                     <div className="mt-6 space-y-3">
                         <button type="button" className="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-gray-800 hover:bg-gray-900 text-white rounded-md">Checkout</button>
-                        <button type="button" className="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-[#E5A95E]   hover:bg-yellow-700 text-white rounded-md">Continue Shopping  </button>
+                        <button type="button" className="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-[#E5A95E]   hover:bg-yellow-700 text-white rounded-md">Continue Shopping</button>
                     </div>
                 </div>
             </div>

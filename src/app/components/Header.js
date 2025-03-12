@@ -20,6 +20,8 @@ useEffect(()=>{
   }
 },[])
 
+const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+
 const menuItems = [
   { name: "Home", href: "/", active: true },
   { name: "Products Page", href: "/Product-page"},
@@ -53,7 +55,14 @@ const menuItems = [
     <div className="flex items-center space-x-6">
       <Search className="w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" />
       <User className="w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" />
+      <div className="relative">
       <ShoppingCart className="w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" onClick={()=>router.push("/Cart")}/>
+      {itemCount > 0 && (
+        <span className="absolute -top-2 -right-2 bg-[#E5A95E] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+          {itemCount}
+        </span>
+      )}
+      </div>
     </div>
   </nav>
   );

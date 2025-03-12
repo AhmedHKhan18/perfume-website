@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation"
 import Card from "@/app/components/ProductCard"
 import Accordation from "@/app/components/Accordation"
 import { useEffect, useState } from "react"
+import { ToastContainer, toast } from 'react-toastify';
   
 
 export default function Product(){
@@ -48,6 +49,7 @@ export default function Product(){
       }
       return [...prevCart, {...product, quantity: 1}];
     });
+    toast("Successfully Added to Cart!")
   }
 
 const products = [
@@ -136,18 +138,6 @@ const products = [
         <hr className='my-6 border-gray-300' />
 
         <div>
-          {/* <h3 className=' text-lg   sm:text-xl   font-bold   text-[#E5A95E] '>Sizes</h3>
-          <div className=' flex   flex-wrap   gap-4   mt-4 '>
-            <button type='button'
-              className=' w-10   h-9   border   border-gray-300   hover:border-[#E5A95E]   text-sm      flex   items-center   justify-center   shrink-0 '>SM</button>
-            <button type='button'
-              className=' w-10   h-9   border   border-[#E5A95E]   hover:border-[#E5A95E]   text-sm      flex   items-center   justify-center   shrink-0 '>MD</button>
-            <button type='button'
-              className=' w-10   h-9   border   border-gray-300   hover:border-[#E5A95E]   text-sm      flex   items-center   justify-center   shrink-0 '>LG</button>
-            <button type='button'
-              className=' w-10   h-9   border   border-gray-300   hover:border-[#E5A95E]   text-sm      flex   items-center   justify-center   shrink-0 '>XL</button>
-          </div> */}
-
           <div className=' mt-6   flex   flex-wrap   gap-4 '>
             <button type='button'
               className=' px-4   py-3   w-[45%]    bg-gray-700   hover:bg-gray-800   text-white   text-sm   font-semibold       '>Add
@@ -260,6 +250,7 @@ const products = [
              ))}
       </div>
   </div>
+  <ToastContainer />
 </div>
     )
 }
