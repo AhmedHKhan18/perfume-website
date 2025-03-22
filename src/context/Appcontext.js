@@ -1,9 +1,9 @@
 'use client'
 import React, { createContext, useState, useEffect } from 'react';
-import { auth, db } from '../firebase.config'; 
+import { auth, db } from '../firebaseConfig'; 
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDocs, getDoc, collection, addDoc, updateDoc, documentId, deleteDoc, onSnapshot } from 'firebase/firestore'; 
-import { uploadMultipleToCloudinary } from '../lib/Cloudinary';
+import { uploadMultipleToCloudinary, uploadToCloudinary } from '../lib/Cloudinary';
 
 export const AppContext = createContext({
   user: null,
@@ -11,10 +11,10 @@ export const AppContext = createContext({
 //   handleSignUp: async () => {},
 //   handleLogin: async () => {},
 //   handleLogout: async () => {},
-  fetchInventory: async () => {},
+  fetchPerfumes: async () => {},
   SaveProduct: async () => {},
   loading: true,
-  inventory: [],
+  perfumesData: [],
 });
 
 export const AppProvider = ({ children }) => {
@@ -23,6 +23,7 @@ export const AppProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [perfumesData, setPerfumesData] = useState([]);
 
 //   const fetchInventory = async () => {
 //     try {
@@ -40,19 +41,38 @@ export const AppProvider = ({ children }) => {
 //       showToast('error', 'Error', 'Failed to fetch inventory data');
 //     }
 //   };
+
+useEffect(() => {
+  fetchPerfumes()
+},[])
   
   const SaveProduct = async (data) => {
     try {
-      const imagesUrl = await uploadMultipleToCloudinary(data.images);
+      // const imagesUrl = await uploadToCloudinary(data.imageUrl);
       
       const docRef = collection(db, 'products')
       await addDoc(docRef, {
         ...data,
-        images: imagesUrl,
+        // images: imagesUrl,
         timestamp: new Date(),
       });
+      console.log("product added")
     } catch (error) {
-      console.error(error);
+      console.log(error);
+    }
+  };
+
+  const fetchPerfumes = async () => {
+    try {
+      const Snapshot = await getDocs(collection(db, "products"));
+      const perfumes = Snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPerfumesData(perfumes);
+      localStorage.setItem("perfumes", JSON.stringify(perfumes));
+    } catch (error) {
+      console.error("Error fetching order list:", error);
     }
   };
 
@@ -107,7 +127,7 @@ export const AppProvider = ({ children }) => {
 //     }
 //   };
   return (
-    <AppContext.Provider value={{ user, authError, loading, inventory, setInventory, SaveProduct }}>
+    <AppContext.Provider value={{ user, authError, loading, perfumesData, fetchPerfumes, SaveProduct }}>
       {children}
     </AppContext.Provider>
   );
