@@ -6,9 +6,13 @@ import perfume from '@/app/assets/perfume.png'
 import mainperfume from '@/app/assets/mainperfumeimg.png'
 import Banner from './Banner'
 import { useRouter } from 'next/navigation'
+import { useContext } from 'react'
+import { AppContext } from '@/context/Appcontext'
 
 export default function HeroSection() {
+  const { perfumesData } = useContext(AppContext);
   const router = useRouter()
+  
   
   const collections = [
     {
@@ -42,42 +46,6 @@ export default function HeroSection() {
       perfume
     },
   ]
-
-const products = [
-  {
-    name: "Luxurious Elixir Rough",
-    price: 220.0,
-    rating: 4,
-    reviews: 60,
-    volume: "100ml",
-    image: perfume,
-  },
-  {
-    name: "The Golden Legacy",
-    price: 160.0,
-    rating: 4,
-    reviews: 103,
-    volume: "100ml",
-    image: perfume,
-  },
-  {
-    name: "The Golden Legacy",
-    price: 160.0,
-    rating: 4,
-    reviews: 103,
-    volume: "100ml",
-    image: perfume,
-  },
-  {
-    name: "The Golden Legacy",
-    price: 160.0,
-    rating: 4,
-    reviews: 103,
-    volume: "100ml",
-    image: perfume,
-  },
-  // ... more products
-]
 
 
   return (
@@ -144,16 +112,16 @@ const products = [
         <h2 className="text-[#E5A95E] text-4xl text-center font-medium mb-8">Best selling products</h2>
         {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-        {products.map((product, index) => (
+        {perfumesData.map((product, index) => (
           <div key={index} className="group">
             <div className="relative bg-[#121212] rounded-lg p-6 transition-transform duration-300 group-hover:scale-[1.02]">
               <div className="relative aspect-square mb-4">
-                <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-contain" />
+                <Image src={product.imageUrl || "/placeholder.svg"} alt={product.name} fill className="object-contain" />
               </div>
               <h3 className="text-lg font-medium mb-2">{product.name}</h3>
               <div className="flex items-center justify-between">
-                <span className="text-[#E5A95E] font-medium">${product.price.toFixed(2)}</span>
-                <span className="text-sm text-gray-400">{product.volume}</span>
+                <span className="text-[#E5A95E] font-medium">Rs{product.price}</span>
+                <span className="text-sm text-gray-400">{product.volume || '30ml'}</span>
               </div>
             </div>
           </div>

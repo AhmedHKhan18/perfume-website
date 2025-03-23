@@ -6,6 +6,8 @@ import perfume from '@/app/assets/perfume.png'
 import BreadCrumbs from "../components/BreadCrumbs"
 import SpecialOffers from "../components/Special-Offer"
 import Card from "../components/ProductCard"
+import { useContext } from "react"
+import { AppContext } from "@/context/Appcontext"
 
 const products = [
   {
@@ -129,6 +131,7 @@ const filterOptions = {
 const sortOptions = ["Featured", "Price: Low to High", "Price: High to Low", "Best Rating", "Most Popular"]
 
 export default function ProductsPage() {
+   const { perfumesData } = useContext(AppContext);
   return (
     <div>
     <BreadCrumbs pageTitle={'Shop'}/>
@@ -139,7 +142,7 @@ export default function ProductsPage() {
       </h1>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      {/* <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
         <div className="flex flex-wrap items-center gap-4">
           <span className="text-gray-400">Filter by:</span>
           {Object.entries(filterOptions).map(([category, options]) => (
@@ -170,11 +173,11 @@ export default function ProductsPage() {
             ))}
           </SelectContent>
         </Select>
-      </div>
+      </div> */}
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map((product, index) => (
+      {perfumesData.map((product, index) => (
         <Card products={product} key={index} index={index}/>
       ))}
       </div>

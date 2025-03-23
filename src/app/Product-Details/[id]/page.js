@@ -6,8 +6,9 @@ import perfume from '@/app/assets/perfume.png'
 import { useSearchParams } from "next/navigation"
 import Card from "@/app/components/ProductCard"
 import Accordation from "@/app/components/Accordation"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { ToastContainer, toast } from 'react-toastify';
+import { AppContext } from "@/context/Appcontext"
   
 
 export default function Product(){
@@ -18,6 +19,7 @@ export default function Product(){
   const image = searchParams.get('image');
   const review = searchParams.get('reviews');
   const rating = searchParams.get('rating');
+  const description = searchParams.get('description');
   const id = searchParams.get("id");
   const product = {
     name: name || 'Unknown',
@@ -25,8 +27,10 @@ export default function Product(){
     image: image || '',
     reviews: review,
     rating: rating,
-    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam tincidunt erat enim. Lorem ipsum dolor sit amet, consectetur adipiscing'
+    description: description
   }
+  const { perfumesData } = useContext(AppContext);
+  
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -245,7 +249,7 @@ const products = [
   <div className="px-2">
     <h1 className="text-4xl text-center my-10 text-[#E5A95E]">Discover More</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-             {products.map((product, index) => (
+             {perfumesData.map((product, index) => (
                <Card products={product} key={index} index={index}/>
              ))}
       </div>

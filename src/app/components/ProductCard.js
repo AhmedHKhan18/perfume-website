@@ -6,11 +6,11 @@ import Link from "next/link"
 export default function Card({products, index}){
     return(
         <>
-        <Link href={{pathname: `/Product-Details/${products.id}`, query: {name: products.name, image: products.image.src, price: products.price, rating: products.rating, reviews: products.reviews}}}>
+        <Link href={{pathname: `/Product-Details/${products.id}`, query: {name: products.name, description: products.description, image: products.imageUrl, price: products.price, rating: products.rating, reviews: products.reviews}}}>
           <div key={index} className="group">
             <div className="relative bg-[#121212] rounded-lg p-6 transition-transform duration-300 group-hover:scale-[1.02]">
               <div className="relative aspect-square mb-4">
-                <Image src={products.image || "/placeholder.svg"} alt={products.name} fill className="object-contain" />
+                <Image src={products.imageUrl || "/placeholder.svg"} alt={products.name} fill className="object-contain" />
               </div>
               <h3 className="text-lg font-medium mb-2">{products.name}</h3>
               <div className="flex items-center gap-1 mb-2">
@@ -26,7 +26,7 @@ export default function Card({products, index}){
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#E5A95E] font-medium">Rs: {products.price}</span>
-                <span className="text-sm text-gray-400">{products.volume}</span>
+                <span className="text-sm text-gray-400">{products.volume || '30ml'}</span>
               </div>
             </div>
           </div>

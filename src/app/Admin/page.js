@@ -6,14 +6,16 @@ import { useContext, useState } from "react";
 import { AppContext } from "@/context/Appcontext";
 
 export default function Admin(){
+    const { SaveProduct } = useContext(AppContext);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
         price: '',
         imageUrl: '',
-
+        reviews: '',
+        rating: '',
+        volume: '',
     });
-    const { SaveProduct, perfumesData } = useContext(AppContext);
 
 const addProduct = () => {
     SaveProduct(formData)
@@ -22,6 +24,9 @@ const addProduct = () => {
         description: "",
         price: "",
         imageUrl: "",
+        reviews: '',
+        rating: '',
+        volume: '',
       });
 }
 
@@ -42,8 +47,9 @@ const handleChange = (e) => {
                     <Input name="name" value={formData.name} placeholder='Enter Product Name' className="bg-transparent border-gray-500" onChange={handleChange}/>
                     <Input name="description" value={formData.description} placeholder='Enter Product Description' className="bg-transparent border-gray-500" onChange={handleChange}/>
                     <Input name="price" value={formData.price} placeholder='Enter Product Price' className="bg-transparent border-gray-500" onChange={handleChange}/>
-                    <Input type='text' placeholder='Enter Product Name' className="bg-transparent border-gray-500" onChange={handleChange}/>
-                    <Input type='text' placeholder='Enter Product Name' className="bg-transparent border-gray-500" onChange={handleChange}/>
+                    <Input name="reviews" value={formData.reviews} type='text' placeholder='Enter Product Reviews' className="bg-transparent border-gray-500" onChange={handleChange}/>
+                    <Input name="rating" value={formData.rating} type='text' placeholder='Enter Product Ratings' className="bg-transparent border-gray-500" onChange={handleChange}/>
+                    <Input name="volume" value={formData.volume} type='text' placeholder='Enter Product Volume' className="bg-transparent border-gray-500" onChange={handleChange}/>
                     <Button className="bg-[#E5A95E] hover:bg-[#D49A4F] text-black" onClick={addProduct}>Add Product</Button>
                 </div>
             </div>
