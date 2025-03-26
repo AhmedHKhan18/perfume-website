@@ -74,7 +74,7 @@ export default function HeroSection() {
   <section className="px-8 py-32 bg-black/90 background-img">
     <div className="max-w-4xl mx-auto text-center">
       <h2 className="text-[#E5A95E] text-3xl font-semibold mb-6">Welcome to A.S Fragrance</h2>
-      <p className="text-gray-300 leading-relaxed mb-8">
+      <p className="text-gray-300 leading-relaxed mb-8 text-justify lg:text-center">
         Welcome to A.S Fragrance! We are where the spirit of luxury and triumph come alive through fragrance. Our
         carefully curated collection features exquisite scents that embody sophistication, confidence, and victory.
         Each perfume in our collection tells a unique story of success and achievement. At A.S Fragrance, we believe
@@ -97,8 +97,8 @@ export default function HeroSection() {
         />
       </div>
       <div>
-        <h2 className="text-[#E5A95E] text-3xl font-semibold mb-6">Our Values</h2>
-        <p className="text-gray-300 leading-relaxed">
+        <h2 className="text-[#E5A95E] text-3xl font-semibold mb-6 text-center lg:text-left">Our Values</h2>
+        <p className="text-gray-300 leading-relaxed text-justify lg:text-left px-4 lg:px-0">
           At A.S Fragrance, we believe in our ability to create divine fragrances of passion and artistry. We believe
           in manifesting the extraordinary through scent. Our commitment to excellence reflects in every aspect of
           our brand - from the carefully selected ingredients to the artisanal crafting process. We take pride in

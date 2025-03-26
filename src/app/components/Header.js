@@ -53,9 +53,43 @@ const menuItems = [
       </a>
     </div>
     <div className="flex items-center space-x-6">
-      <Search className="w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" />
-      <User className="w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" />
-      <div className="relative">
+      <Search className="w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" onClick={()=>router.push("/Search")}/>
+      <button
+          className="lg:hidden text-white"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          {/* {isMenuOpen ? <X size={24} /> : <Menu size={24} />} */}
+          <Menu size={24} />
+        </button>
+        <ul className={`
+          fixed inset-0 bg-black flex flex-col items-center justify-center py-10 gap-6
+          transition-all duration-300 ease-in-out w-screen h-screen lg:hidden z-10
+          ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}
+          `}>
+          <button
+         className="lg:hidden text-white z-20"
+         onClick={() => setIsMenuOpen(!isMenuOpen)}
+       >
+         <X size={50} /> 
+       </button>
+        {/* <div className='gap-6'> */}
+          {menuItems.map((item) => (
+            <li key={item.name}>
+              <Link
+                href={item.href}
+                className={`text-3xl leading-6 ${
+                  item.active ? "text-white font-bold" : "text-[#FF9F0D]"
+                } font-inter hover:text-[#FF9F0D] transition-colors`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        {/* </div> */}
+        </ul>
+      <User className="hidden lg:flex w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" />
+      <div className="hidden lg:flex relative">
       <ShoppingCart className="w-5 h-5 text-white hover:text-[#E5A95E] cursor-pointer" onClick={()=>router.push("/Cart")}/>
       {itemCount > 0 && (
         <span className="absolute -top-2 -right-2 bg-[#E5A95E] text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">

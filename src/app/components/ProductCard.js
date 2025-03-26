@@ -6,7 +6,7 @@ import Link from "next/link"
 export default function Card({products, index}){
     return(
         <>
-        <Link href={{pathname: `/Product-Details/${products.id}`, query: {name: products.name, description: products.description, image: products.imageUrl, price: products.price, rating: products.rating, reviews: products.reviews}}}>
+        <Link href={{pathname: `/Product-Details/${products.id}`, query: {name: products.name, description: products.description, image: products.imageUrl, price: products.price, rating: products.rating, reviews: products.reviews, volume: products.volume}}}>
           <div key={index} className="group">
             <div className="relative bg-[#121212] rounded-lg p-6 transition-transform duration-300 group-hover:scale-[1.02]">
               <div className="relative aspect-square mb-4">

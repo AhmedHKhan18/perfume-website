@@ -7,8 +7,6 @@ import { useEffect, useState } from "react";
 export default function Cart(){
     const [cart, setCart] = useState([]);
     const [updatequantity, setUpdatequantity] = useState(1);
-    const id = useSearchParams().get('id');
-    console.log("🚀 ~ Cart ~ id:", id)
 
     const subtotalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
     const Shipping = 30
@@ -20,10 +18,9 @@ useEffect(() => {
     setCart(savedCart);
 },[]);
 
-const handleRemoveCart = (e) => {
-    e.preventDefault();
+const handleRemoveCart = ( id) => {
+    // e.preventDefault();
     const updatedCart = cart.filter(item => item.id !== id);
-    console.log("🚀 ~ handleRemoveCart ~ updatedCart:", updatedCart)
     setCart(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart))
 }
@@ -55,7 +52,7 @@ const sendOrderNotification = async (orderData) => {
   };
   
   // Call this function after an order is placed
-  sendOrderNotification(order);
+//   sendOrderNotification(order);
   
 return(
         <div className="font-sans max-w-5xl md:max-w-full mx-auto py-4">
@@ -73,9 +70,9 @@ return(
 
                             <div className="flex flex-col">
                                 <h3 className="text-base font-bold text-[#E5A95E]">{item.name}</h3>
-                                <p className="text-xs font-semibold text-white mt-0.5">Size: MD</p>
+                                <p className="text-xs font-semibold text-white mt-0.5">Volume: {item.volume}</p>
 
-                                <button type="button" className="mt-6 font-semibold text-red-500 text-xs flex items-center gap-1 shrink-0" onClick={handleRemoveCart}>
+                                <button type="button" className="mt-6 font-semibold text-red-500 text-xs flex items-center gap-1 shrink-0" onClick={()=>handleRemoveCart(item.id)}>
                                     <Trash2/>
                                     REMOVE
                                 </button>
@@ -96,7 +93,7 @@ return(
                         <hr className="border-gray-300" />
                         </>
                                 )
-                            }):<p className="text-xl text-white text-center">Your Cart is Empty</p>}
+                            }):(<p className="text-xl text-white text-center">Your Cart is Empty</p>)}
                 </div>
 
                 <div className=" rounded-md p-4 h-max">

@@ -20,6 +20,7 @@ export default function Product(){
   const review = searchParams.get('reviews');
   const rating = searchParams.get('rating');
   const description = searchParams.get('description');
+  const volume = searchParams.get('volume');
   const id = searchParams.get("id");
   const product = {
     name: name || 'Unknown',
@@ -27,7 +28,9 @@ export default function Product(){
     image: image || '',
     reviews: review,
     rating: rating,
-    description: description
+    description: description,
+    volume: volume,
+    id: id
   }
   const { perfumesData } = useContext(AppContext);
   
@@ -55,41 +58,6 @@ export default function Product(){
     });
     toast("Successfully Added to Cart!")
   }
-
-const products = [
-  {
-    name: "Luxurious Elixir Rough",
-    price: 220.0,
-    rating: 4,
-    reviews: 60,
-    volume: "100ml",
-    image: perfume,
-  },
-  {
-    name: "The Golden Legacy",
-    price: 160.0,
-    rating: 4,
-    reviews: 103,
-    volume: "100ml",
-    image: perfume,
-  },
-  {
-    name: "The Golden Legacy",
-    price: 160.0,
-    rating: 4,
-    reviews: 103,
-    volume: "100ml",
-    image: perfume,
-  },
-  {
-    name: "The Golden Legacy",
-    price: 160.0,
-    rating: 4,
-    reviews: 103,
-    volume: "100ml",
-    image: perfume,
-  },
-]
 
 
     return(
