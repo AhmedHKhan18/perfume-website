@@ -112,7 +112,7 @@ export default function HeroSection() {
         <h2 className="text-[#E5A95E] text-4xl text-center font-medium mb-8">Best selling products</h2>
         {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-        {perfumesData.map((product, index) => (
+        {perfumesData.slice(0, 4).map((product, index) => (
           <div key={index} className="group">
             <div className="relative bg-[#121212] rounded-lg p-6 transition-transform duration-300 group-hover:scale-[1.02]">
               <div className="relative aspect-square mb-4">

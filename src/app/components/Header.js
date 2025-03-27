@@ -24,12 +24,11 @@ const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
 const menuItems = [
   { name: "Home", href: "/", active: true },
-  { name: "Products Page", href: "/Product-page"},
-  { name: "Cart", href: "/Details/Cart" },
-  { name: "Product Details", href: "/Details" },
-  { name: "Contact Us", href: "/Contact-us" },
-  { name: "About Us", href: "/About-us" },
-  { name: "FAQ", href: "/Faq" },
+  { name: "Shop", href: "/ProductList"},
+  { name: "Cart", href: "/Cart" },
+  { name: "Contact Us", href: "/Contact-Us" },
+  { name: "About Us", href: "/About-Us" },
+  { name: "Blogs", href: "/Blogs" },
 ]
 
   return (

@@ -67,7 +67,7 @@ export default function Product(){
     <div className='grid items-start grid-cols-1 lg:grid-cols-2 gap-8 max-lg:gap-12 max-sm:gap-8'>
       <div className='w-full lg:sticky top-0'>
         <div className='flex flex-row gap-2'>
-          <div className='flex flex-col gap-2 w-16 max-sm:w-14 shrink-0'>
+          {/* <div className='flex flex-col gap-2 w-16 max-sm:w-14 shrink-0'>
             <Image src={product.image} alt='Product1' width={100} height={100}
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-black' />
             <Image src={product.image} alt='Product2' width={100} height={100}
@@ -76,10 +76,10 @@ export default function Product(){
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
             <Image src={product.image} alt='Product4' width={100} height={100}
               className='aspect-[64/85] object-cover object-top w-full cursor-pointer border-b-2 border-transparent' />
-          </div>
+          </div> */}
           <div className='flex-1'>
             <Image src={product.image} alt='Product' width={100} height={100}
-              className='w-full aspect-[548/712] object-cover' />
+              className='w-full aspect-[548/712] object-contain' />
           </div>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function Product(){
           </p>
           <div className='flex items-center flex-wrap gap-4 mt-4'>
             <h4 className='text-[#E5A95E] text-2xl sm:text-3xl font-bold'>Rs:{product.price}</h4>
-            <p className='text-white text-lg'><strike>Rs:200</strike> <span className='text-sm ml-1.5'>Tax included</span></p>
+            {/* <p className='text-white text-lg'><strike>Rs:200</strike> <span className='text-sm ml-1.5'>Tax included</span></p> */}
           </div>
 
           <div className='flex items-center gap-4 mt-2'>
@@ -217,7 +217,7 @@ export default function Product(){
   <div className="px-2">
     <h1 className="text-4xl text-center my-10 text-[#E5A95E]">Discover More</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
-             {perfumesData.map((product, index) => (
+             {perfumesData.slice(0, 4).map((product, index) => (
                <Card products={product} key={index} index={index}/>
              ))}
       </div>

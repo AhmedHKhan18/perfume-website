@@ -40,7 +40,7 @@ export default function AboutPage() {
           </div>
           <div className="relative text-center max-w-3xl mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">About Us</h1>
-            <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
+            <p className="text-lg md:text-xl text-gray-300 leading-relaxed text-justify lg:text-center">
               At A.S Fragrance, we believe that perfumes are more than just scents; they are expressions of art and style.
               We strive to create fragrances that capture the essence of luxury and sophistication, crafting each scent
               with passion and precision to give you an unforgettable sensory experience.
@@ -53,7 +53,7 @@ export default function AboutPage() {
           <div className="max-w-8xl">
               <div className="text-center mb-52 ">
                 <h2 className="text-[#E5A95E] text-3xl md:text-4xl font-bold mb-6">Our Story</h2>
-                <p className="text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                <p className="text-gray-300 max-w-3xl mx-4 leading-relaxed text-justify lg:text-center">
                   A.S Fragrance began as a small artisanal perfume house dedicated to creating unique and captivating
                   scents. Our journey started with a simple passion to create the perfect fragrance that would capture
                   the essence of luxury and individuality. Today, we continue to push the boundaries of perfumery,
