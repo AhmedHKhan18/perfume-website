@@ -53,7 +53,7 @@ export default function AboutPage() {
           <div className="max-w-8xl">
               <div className="text-center mb-52 ">
                 <h2 className="text-[#E5A95E] text-3xl md:text-4xl font-bold mb-6">Our Story</h2>
-                <p className="text-gray-300 max-w-3xl mx-4 leading-relaxed text-justify lg:text-center">
+                <p className="text-gray-300 max-w-3xl mx-auto leading-relaxed text-justify lg:text-center">
                   A.S Fragrance began as a small artisanal perfume house dedicated to creating unique and captivating
                   scents. Our journey started with a simple passion to create the perfect fragrance that would capture
                   the essence of luxury and individuality. Today, we continue to push the boundaries of perfumery,
