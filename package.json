@@ -12,7 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.3",
