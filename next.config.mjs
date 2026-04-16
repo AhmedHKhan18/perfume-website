@@ -4,7 +4,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
 },
   images: {
-    domains: ['res.cloudinary.com'],
+    domains: ['res.cloudinary.com', 'firebasestorage.googleapis.com', 'lh3.googleusercontent.com'],
 },
 output: "standalone", // Ensures the app runs dynamically
   experimental: {

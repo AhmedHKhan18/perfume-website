@@ -10,6 +10,15 @@ module.exports = {
   ],
   theme: {
   	extend: {
+      fontFamily: {
+        playfair: ['var(--font-playfair)', 'Georgia', 'serif'],
+        jost: ['var(--font-jost)', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        gold: '#C9A96E',
+        'gold-light': '#E2C68A',
+        'gold-dark': '#A8864E',
+      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

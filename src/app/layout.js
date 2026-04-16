@@ -1,39 +1,62 @@
-import localFont from "next/font/local";
+import { Playfair_Display, Jost } from "next/font/google";
 import "./globals.css";
 import Header from './components/Header'
 import Footer from './components/Footer'
 import { AppProvider } from "@/context/Appcontext";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+
+const jost = Jost({
+  subsets: ["latin"],
+  variable: "--font-jost",
+  display: "swap",
 });
 
 export const metadata = {
-  title: "AS Fragrance",
-  description: "Experience the essence of luxury and victory with A.S Fragnance",
+  title: "A.S Fragrance | Luxury Perfumes",
+  description: "Experience the essence of luxury and victory with A.S Fragrance",
+  icons: {
+    icon: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-      <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-    <AppProvider>
-    <Header />
-        {children}
-    <Footer />
-    </AppProvider>
+      <body className={`${playfair.variable} ${jost.variable} font-jost antialiased bg-[#0a0a0a] text-white`}>
+        <AppProvider>
+          <Header />
+          <main className="pt-[calc(2.5rem+4rem)]">
+            {children}
+          </main>
+          <Footer />
+          <ToastContainer
+            position="top-right"
+            autoClose={2500}
+            hideProgressBar
+            newestOnTop
+            closeOnClick
+            pauseOnHover
+            theme="dark"
+            toastStyle={{
+              backgroundColor: '#111',
+              color: '#fff',
+              border: '1px solid #2a2a2a',
+              borderLeft: '3px solid #C9A96E',
+              fontFamily: 'var(--font-jost)',
+              fontSize: '13px',
+            }}
+          />
+        </AppProvider>
       </body>
     </html>
   );

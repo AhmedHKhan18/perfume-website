@@ -1,168 +1,336 @@
 'use client'
-import { Minus, Plus, Trash, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Tag, Lock } from "lucide-react";
 import Image from "next/image";
-import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useContext, useState } from "react";
+import Swal from 'sweetalert2';
+import { AppContext } from "@/context/Appcontext";
+import { db } from "@/firebaseConfig";
+import { collection, addDoc } from "firebase/firestore";
 
-export default function Cart(){
-    const [cart, setCart] = useState([]);
-    const [updatequantity, setUpdatequantity] = useState(1);
-
-    const subtotalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
-    const Shipping = 30
-    const Tax = 20
-    const totalPrice = subtotalPrice + Shipping + Tax
-
-useEffect(() => {
-    const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    setCart(savedCart);
-},[]);
-
-const handleRemoveCart = ( id) => {
-    // e.preventDefault();
-    const updatedCart = cart.filter(item => item.id !== id);
-    setCart(updatedCart);
-    localStorage.setItem('cart', JSON.stringify(updatedCart))
+const COUPONS = {
+  WELCOME20: 20,
+  SAVE10: 10,
+  ASFF15: 15,
 }
 
-const sendOrderNotification = async (orderData) => {
-    try {
-      const response = await fetch('/api/sendEmail', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderDetails: orderData }),
-      });
-  
-      if (response.ok) {
-        alert('Order placed successfully, notification sent!');
-      } else {
-        alert('Failed to send notification.');
-      }
-    } catch (error) {
-      console.error('Error sending order notification:', error);
+const SHIPPING_THRESHOLD = 2000
+const SHIPPING_FEE = 200
+
+export default function Cart() {
+  const { user, loading, cart, removeFromCart, updateCartQuantity, clearCart } = useContext(AppContext);
+  const isLoggedIn = !loading && !!user;
+
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+  const [checkoutForm, setCheckoutForm] = useState({ name: '', email: '', phone: '', address: '', city: '', notes: '' });
+  const [formErrors, setFormErrors] = useState({});
+  const [placing, setPlacing] = useState(false);
+
+  const subtotal = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+  const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+  const discount = appliedCoupon ? Math.round((subtotal * COUPONS[appliedCoupon]) / 100) : 0;
+  const total = subtotal + shipping - discount;
+
+  const applyCoupon = () => {
+    const code = couponInput.trim().toUpperCase();
+    if (COUPONS[code]) {
+      setAppliedCoupon(code);
+      setCouponError('');
+      setCouponInput('');
+    } else {
+      setCouponError('Invalid coupon code.');
+      setAppliedCoupon(null);
     }
   };
-  
-  // Example order object
-  const order = {
-    item: 'Wireless Headphones',
-    quantity: 2,
-    customerName: 'Ahmed',
-    address: '123 Main St, London',
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
   };
-  
-  // Call this function after an order is placed
-//   sendOrderNotification(order);
-  
-return(
-        <div className="font-sans max-w-5xl md:max-w-full mx-auto py-4">
 
-            <div className="grid md:grid-cols-3 gap-8 mt-16">
-                <div className="md:col-span-2 space-y-4">
-                    {cart.length >= 0 ? cart.map((item, index) => {
-                        return(
-                            <>  
-                            <div className="grid grid-cols-3 items-start gap-4">
-                        <div className="col-span-2 flex items-start gap-4">
-                            <div className="w-28 h-28 max-sm:w-24 max-sm:h-24 shrink-0 bg-gray-100 p-2 rounded-md">
-                                <Image src={item.image} width={100} height={100} alt="img" className="w-full h-full object-contain" />
-                            </div>
+  const validateForm = () => {
+    const errors = {};
+    if (!checkoutForm.name.trim()) errors.name = 'Full name is required';
+    if (!checkoutForm.phone.trim()) errors.phone = 'Phone number is required';
+    if (!checkoutForm.address.trim()) errors.address = 'Address is required';
+    if (!checkoutForm.city.trim()) errors.city = 'City is required';
+    if (checkoutForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(checkoutForm.email)) {
+      errors.email = 'Enter a valid email';
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-                            <div className="flex flex-col">
-                                <h3 className="text-base font-bold text-[#E5A95E]">{item.name}</h3>
-                                <p className="text-xs font-semibold text-white mt-0.5">Volume: {item.volume}</p>
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    if (!isLoggedIn) {
+      Swal.fire({
+        title: 'Sign In Required',
+        html: 'Please <a href="/Sign-in" style="color:#E5A95E;text-decoration:underline;font-weight:600">sign in</a> to place your order.',
+        icon: 'warning',
+        background: '#111',
+        color: '#fff',
+        confirmButtonColor: '#E5A95E',
+        confirmButtonText: 'Go to Sign In',
+      }).then((result) => {
+        if (result.isConfirmed) window.location.href = '/Sign-in';
+      });
+      return;
+    }
+    if (!validateForm()) return;
 
-                                <button type="button" className="mt-6 font-semibold text-red-500 text-xs flex items-center gap-1 shrink-0" onClick={()=>handleRemoveCart(item.id)}>
-                                    <Trash2/>
-                                    REMOVE
-                                </button>
-                            </div>
-                        </div>
+    setPlacing(true);
+    try {
+      const orderData = {
+        items: cart,
+        customer: checkoutForm,
+        userId: user?.uid || null,
+        userEmail: user?.email || checkoutForm.email || null,
+        subtotal,
+        shipping,
+        discount,
+        total,
+        coupon: appliedCoupon || null,
+        paymentMethod: 'COD',
+        status: 'Pending',
+        createdAt: new Date(),
+      };
 
-                        <div className="ml-auto">
-                            <h4 className="text-lg max-sm:text-base font-bold text-[#E5A95E]">Rs: {item.price}</h4>
+      // Save to Firestore
+      await addDoc(collection(db, 'orders'), orderData);
+      clearCart();
 
-                            <button type="button"
-                                className="mt-6 flex items-center px-3 py-1.5 border border-gray-300 text-white text-xs outline-none bg-transparent rounded-md">
-                                <Minus className="w-4" onClick={()=>setUpdatequantity(item.quantity >1 ? item.quantity -- : 1)}/>
-                                <span className="mx-3 font-bold">{updatequantity}</span>
-                                <Plus className="w-4" onClick={()=>setUpdatequantity(item.quantity ++)}/>
-                            </button>
-                        </div>
-                    </div>
-                        <hr className="border-gray-300" />
-                        </>
-                                )
-                            }):(<p className="text-xl text-white text-center">Your Cart is Empty</p>)}
-                </div>
+      Swal.fire({
+        title: 'Order Placed!',
+        html: `<p>Thank you, <strong>${checkoutForm.name}</strong>!</p><p>Your order has been received and will be delivered soon.</p>`,
+        icon: 'success',
+        background: '#111',
+        color: '#fff',
+        confirmButtonColor: '#E5A95E',
+        confirmButtonText: 'Continue Shopping',
+      }).then(() => {
+        window.location.href = '/ProductList';
+      });
+    } catch (err) {
+      console.error('Order error:', err);
+      Swal.fire({ title: 'Error', text: 'Failed to place order. Please try again.', icon: 'error', background: '#111', color: '#fff', confirmButtonColor: '#E5A95E' });
+    } finally {
+      setPlacing(false);
+    }
+  };
 
-                <div className=" rounded-md p-4 h-max">
-                    <h3 className="text-lg max-sm:text-base font-bold text-[#E5A95E] border-b border-gray-300 pb-2">Order Summary</h3>
-
-                    <form className="mt-6">
-                        <div>
-                            <h3 className="text-base text-white  font-semibold mb-4">Enter Details</h3>
-                            <div className="space-y-3">
-                                <div className="relative flex items-center">
-                                    <input type="text" placeholder="Full Name"
-                                        className="px-4 py-2.5 bg-white text-gray-800 rounded-md w-full text-sm border-b focus:border-gray-800 outline-none" />
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb" className="w-4 h-4 absolute right-4"
-                                        viewBox="0 0 24 24">
-                                        <circle cx="10" cy="7" r="6" data-original="#000000"></circle>
-                                        <path
-                                            d="M14 15H6a5 5 0 0 0-5 5 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 5 5 0 0 0-5-5zm8-4h-2.59l.3-.29a1 1 0 0 0-1.42-1.42l-2 2a1 1 0 0 0 0 1.42l2 2a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-.3-.29H22a1 1 0 0 0 0-2z"
-                                            data-original="#000000"></path>
-                                    </svg>
-                                </div>
-
-                                <div className="relative flex items-center">
-                                    <input type="email" placeholder="Email"
-                                        className="px-4 py-2.5 bg-white text-gray-800 rounded-md w-full text-sm border-b focus:border-gray-800 outline-none" />
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb" className="w-4 h-4 absolute right-4"
-                                        viewBox="0 0 682.667 682.667">
-                                        <defs>
-                                            <clipPath id="a" clipPathUnits="userSpaceOnUse">
-                                                <path d="M0 512h512V0H0Z" data-original="#000000"></path>
-                                            </clipPath>
-                                        </defs>
-                                        <g clipPath="url(#a)" transform="matrix(1.33 0 0 -1.33 0 682.667)">
-                                            <path fill="none" strokeMiterlimit="10" strokeWidth="40"
-                                                d="M452 444H60c-22.091 0-40-17.909-40-40v-39.446l212.127-157.782c14.17-10.54 33.576-10.54 47.746 0L492 364.554V404c0 22.091-17.909 40-40 40Z"
-                                                data-original="#000000"></path>
-                                            <path
-                                                d="M472 274.9V107.999c0-11.027-8.972-20-20-20H60c-11.028 0-20 8.973-20 20V274.9L0 304.652V107.999c0-33.084 26.916-60 60-60h392c33.084 0 60 26.916 60 60v196.653Z"
-                                                data-original="#000000"></path>
-                                        </g>
-                                    </svg>
-                                </div>
-
-                                <div className="relative flex items-center">
-                                    <input type="number" placeholder="Phone No."
-                                        className="px-4 py-2.5 bg-white text-gray-800 rounded-md w-full text-sm border-b focus:border-gray-800 outline-none" />
-                                    <svg fill="#bbb" className="w-4 h-4 absolute right-4" viewBox="0 0 64 64">
-                                        <path
-                                            d="m52.148 42.678-6.479-4.527a5 5 0 0 0-6.963 1.238l-1.504 2.156c-2.52-1.69-5.333-4.05-8.014-6.732-2.68-2.68-5.04-5.493-6.73-8.013l2.154-1.504a4.96 4.96 0 0 0 2.064-3.225 4.98 4.98 0 0 0-.826-3.739l-4.525-6.478C20.378 10.5 18.85 9.69 17.24 9.69a4.69 4.69 0 0 0-1.628.291 8.97 8.97 0 0 0-1.685.828l-.895.63a6.782 6.782 0 0 0-.63.563c-1.092 1.09-1.866 2.472-2.303 4.104-1.865 6.99 2.754 17.561 11.495 26.301 7.34 7.34 16.157 11.9 23.011 11.9 1.175 0 2.281-.136 3.29-.406 1.633-.436 3.014-1.21 4.105-2.302.199-.199.388-.407.591-.67l.63-.899a9.007 9.007 0 0 0 .798-1.64c.763-2.06-.007-4.41-1.871-5.713z"
-                                            data-original="#000000"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-
-                    <ul className="text-white mt-6 space-y-3">
-                        <li className="flex flex-wrap gap-4 text-sm">Subtotal <span className="ml-auto font-bold">Rs:{subtotalPrice}</span></li>
-                        <li className="flex flex-wrap gap-4 text-sm">Shipping <span className="ml-auto font-bold">{cart.length ? `Rs:${Shipping}`: 0}</span></li>
-                        <li className="flex flex-wrap gap-4 text-sm">Tax <span className="ml-auto font-bold">Rs:{Tax}</span></li>
-                        <hr className="border-gray-300" />
-                        <li className="flex flex-wrap gap-4 text-sm font-bold">Total <span className="ml-auto">Rs:{totalPrice.toFixed(2)}</span></li>
-                    </ul>
-
-                    <div className="mt-6 space-y-3">
-                        <button type="button" className="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-gray-800 hover:bg-gray-900 text-white rounded-md">Checkout</button>
-                        <button type="button" className="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-[#E5A95E]   hover:bg-yellow-700 text-white rounded-md">Continue Shopping</button>
-                    </div>
-                </div>
-            </div>
+  if (cart.length === 0) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center px-4">
+        <div className="text-center">
+          <ShoppingBag className="w-20 h-20 text-gray-700 mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-white mb-3">Your cart is empty</h2>
+          <p className="text-gray-500 mb-8">Add some fragrances to get started.</p>
+          <Link
+            href="/ProductList"
+            className="inline-flex items-center gap-2 bg-[#E5A95E] hover:bg-[#d49a4f] text-black font-semibold px-8 py-3 rounded-full transition-all"
+          >
+            Shop Now
+          </Link>
         </div>
-    )
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      <div className="max-w-6xl mx-auto px-4 md:px-8 py-10">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Link href="/ProductList" className="text-gray-400 hover:text-[#E5A95E] transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-2xl font-bold">Shopping Cart</h1>
+          <span className="text-gray-500 text-sm">({cart.length} item{cart.length !== 1 ? 's' : ''})</span>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* ── Cart items ── */}
+          <div className="lg:col-span-2 space-y-4">
+            {cart.map((item) => (
+              <div key={item.id} className="flex gap-4 bg-[#0f0f0f] border border-gray-800 rounded-xl p-4">
+                <div className="w-24 h-24 bg-[#111] rounded-lg overflow-hidden shrink-0">
+                  <Image
+                    src={item.image || item.imageUrl || '/placeholder.svg'}
+                    alt={item.name}
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-contain p-1"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold text-white text-sm">{item.name}</h3>
+                      <p className="text-xs text-gray-500 mt-0.5">Volume: {item.volume || '30ml'}</p>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="text-gray-600 hover:text-red-400 transition-colors shrink-0"
+                      aria-label="Remove item"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between mt-3">
+                    {/* Quantity controls */}
+                    <div className="flex items-center border border-gray-700 rounded-lg overflow-hidden">
+                      <button
+                        onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                        className="px-3 py-1.5 hover:bg-gray-800 transition-colors"
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus className="w-3 h-3" />
+                      </button>
+                      <span className="px-4 py-1.5 text-sm font-semibold min-w-[2.5rem] text-center">{item.quantity}</span>
+                      <button
+                        onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
+                        className="px-3 py-1.5 hover:bg-gray-800 transition-colors"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <span className="text-[#E5A95E] font-bold">Rs {(Number(item.price) * item.quantity).toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Coupon */}
+            <div className="bg-[#0f0f0f] border border-gray-800 rounded-xl p-4">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <Tag className="w-4 h-4 text-[#E5A95E]" /> Coupon Code
+              </h3>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-[#E5A95E]/10 border border-[#E5A95E]/30 rounded-lg px-4 py-2.5">
+                  <span className="text-sm text-[#E5A95E] font-mono font-semibold">{appliedCoupon} — {COUPONS[appliedCoupon]}% off</span>
+                  <button onClick={removeCoupon} className="text-gray-500 hover:text-white text-xs">Remove</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter coupon code"
+                    value={couponInput}
+                    onChange={(e) => { setCouponInput(e.target.value); setCouponError('') }}
+                    onKeyDown={(e) => e.key === 'Enter' && applyCoupon()}
+                    className="flex-1 bg-[#111] border border-gray-700 focus:border-[#E5A95E]/50 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 outline-none"
+                  />
+                  <button
+                    onClick={applyCoupon}
+                    className="bg-[#E5A95E] hover:bg-[#d49a4f] text-black font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
+              {couponError && <p className="text-red-400 text-xs mt-2">{couponError}</p>}
+              <p className="text-xs text-gray-600 mt-2">Try: WELCOME20, SAVE10, ASFF15</p>
+            </div>
+          </div>
+
+          {/* ── Order summary + checkout ── */}
+          <div className="space-y-4">
+            {/* Summary */}
+            <div className="bg-[#0f0f0f] border border-gray-800 rounded-xl p-5">
+              <h3 className="text-base font-bold mb-4">Order Summary</h3>
+              <div className="space-y-2.5 text-sm">
+                <div className="flex justify-between text-gray-400">
+                  <span>Subtotal</span>
+                  <span className="text-white">Rs {subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-gray-400">
+                  <span>Shipping</span>
+                  <span className={shipping === 0 ? 'text-green-400' : 'text-white'}>
+                    {shipping === 0 ? 'Free' : `Rs ${shipping}`}
+                  </span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-400">
+                    <span>Discount ({appliedCoupon})</span>
+                    <span>−Rs {discount.toLocaleString()}</span>
+                  </div>
+                )}
+                <hr className="border-gray-800 my-1" />
+                <div className="flex justify-between font-bold text-base">
+                  <span>Total</span>
+                  <span className="text-[#E5A95E]">Rs {total.toLocaleString()}</span>
+                </div>
+              </div>
+              {shipping > 0 && (
+                <p className="text-xs text-gray-500 mt-3">
+                  Add Rs {(SHIPPING_THRESHOLD - subtotal).toLocaleString()} more for free shipping
+                </p>
+              )}
+            </div>
+
+            {/* COD Checkout form */}
+            <div className="bg-[#0f0f0f] border border-gray-800 rounded-xl p-5">
+              <h3 className="text-base font-bold mb-4">Delivery Details</h3>
+              <div className="space-y-3">
+                {[
+                  { key: 'name', placeholder: 'Full Name *', type: 'text' },
+                  { key: 'phone', placeholder: 'Phone Number *', type: 'tel' },
+                  { key: 'email', placeholder: 'Email (optional)', type: 'email' },
+                  { key: 'address', placeholder: 'Street Address *', type: 'text' },
+                  { key: 'city', placeholder: 'City *', type: 'text' },
+                  { key: 'notes', placeholder: 'Order notes (optional)', type: 'text' },
+                ].map(({ key, placeholder, type }) => (
+                  <div key={key}>
+                    <input
+                      type={type}
+                      placeholder={placeholder}
+                      value={checkoutForm[key]}
+                      onChange={(e) => setCheckoutForm((f) => ({ ...f, [key]: e.target.value }))}
+                      className={`w-full bg-[#111] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors ${
+                        formErrors[key] ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                      }`}
+                    />
+                    {formErrors[key] && <p className="text-red-400 text-xs mt-1">{formErrors[key]}</p>}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 p-3 bg-[#111] border border-gray-800 rounded-lg flex items-center gap-2">
+                <span className="text-lg">💵</span>
+                <div>
+                  <p className="text-sm font-medium text-white">Cash on Delivery</p>
+                  <p className="text-xs text-gray-500">Pay when you receive your order</p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleCheckout}
+                disabled={placing}
+                className={`w-full mt-4 font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed ${
+                  isLoggedIn
+                    ? 'bg-[#E5A95E] hover:bg-[#d49a4f] text-black hover:shadow-lg hover:shadow-[#E5A95E]/20'
+                    : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
+                }`}
+              >
+                {placing ? (
+                  <><span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" /> Placing Order…</>
+                ) : !isLoggedIn ? (
+                  <><Lock className="w-4 h-4" /> Sign In to Place Order</>
+                ) : (
+                  <>Place Order · Rs {total.toLocaleString()}</>
+                )}
+              </button>
+            </div>
+
+            <Link href="/ProductList" className="block text-center text-sm text-gray-500 hover:text-[#E5A95E] transition-colors">
+              ← Continue Shopping
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
