@@ -3,7 +3,7 @@
 import Image from "next/image"
 import banner from '@/app/assets/bannerpic.png'
 import background from '@/app/assets/background-img.png'
-import collection from '@/app/assets/perfume-collection.png'
+import collection from '@/app/assets/perfume-background.jpg'
 
 const features = [
   {

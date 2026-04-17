@@ -6,8 +6,8 @@ import { useContext } from 'react'
 import { ArrowRight, ArrowUpRight } from 'lucide-react'
 import { AppContext } from '@/context/Appcontext'
 import Card from './ProductCard'
-import mainperfume from '@/app/assets/mainperfumeimg.png'
-import bottle from '@/app/assets/bottle.png'
+import mainperfume from '@/app/assets/landscape-img.png'
+import bottle from '@/app/assets/bottle.jpg'
 
 /* ── Shared section-header ── */
 function SectionHeader({ eyebrow, title, align = 'center' }) {
@@ -50,16 +50,22 @@ export default function HeroSection() {
           HERO
       ════════════════════════════════════════ */}
       <section className="relative min-h-[94vh] flex items-center overflow-hidden">
-        {/* layered bg */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#120b00] via-[#0a0a0a] to-[#0a0a0a]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_70%_50%,_#C9A96E08_0%,_transparent_70%)]" />
-        {/* faint grid lines */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{backgroundImage:'repeating-linear-gradient(0deg,#fff 0,#fff 1px,transparent 1px,transparent 80px),repeating-linear-gradient(90deg,#fff 0,#fff 1px,transparent 1px,transparent 80px)'}} />
+        {/* background image */}
+        <Image
+          src={mainperfume}
+          alt="hero background"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+        {/* dark overlay */}
+        <div className="absolute inset-0 bg-[#0a0a0a]/1" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/80 via-[#0a0a0a]/40 to-transparent" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 w-full grid lg:grid-cols-2 gap-16 items-center py-24 md:py-32">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 w-full py-24 md:py-32">
 
           {/* Text */}
-          <div className="order-2 lg:order-1">
+          <div className="max-w-2xl">
             {/* eyebrow */}
             <div className="inline-flex items-center gap-3 mb-8">
               <div className="h-px w-8 bg-[#C9A96E]" />
@@ -95,27 +101,13 @@ export default function HeroSection() {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-10 pt-8 border-t border-[#1e1e1e]">
+            <div className="flex gap-10 pt-8 border-t border-white/10">
               <Stat value="50+" label="Fragrances" />
               <Stat value="10K+" label="Customers" />
               <Stat value="4.9★" label="Avg Rating" />
             </div>
           </div>
 
-          {/* Hero image */}
-          <div className="order-1 lg:order-2 flex justify-center items-center relative">
-            <div className="absolute w-72 h-72 rounded-full bg-[#C9A96E]/6 blur-[80px]" />
-            <div className="relative z-10">
-              <Image
-                src={mainperfume}
-                alt="A.S Fragrance signature bottle"
-                width={400}
-                height={520}
-                className="object-contain drop-shadow-2xl"
-                priority
-              />
-            </div>
-          </div>
         </div>
 
         {/* bottom fade */}
@@ -174,14 +166,14 @@ export default function HeroSection() {
       <section className="py-24 bg-[#0d0d0d] border-y border-[#1a1a1a]">
         <div className="max-w-6xl mx-auto px-6 md:px-8 grid lg:grid-cols-2 gap-16 items-center">
           {/* image */}
-          <div className="relative">
+          <div className="relative flex justify-center">
             <div className="absolute -inset-6 bg-[#C9A96E]/4 rounded-[2px] blur-2xl" />
             <Image
               src={bottle}
               alt="A.S Fragrance artisanal craft"
-              width={560}
-              height={560}
-              className="relative w-full rounded-sm object-cover"
+              width={420}
+              height={420}
+              className="relative rounded-sm object-contain"
             />
             {/* floating badge */}
             <div className="absolute -bottom-5 -right-5 hidden md:flex bg-[#C9A96E] text-[#0a0a0a] text-center px-6 py-4">
