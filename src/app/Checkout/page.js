@@ -102,7 +102,7 @@ export default function Checkout() {
         discount,
         total,
         coupon: appliedCoupon || null,
-        paymentMethod: paymentMethod === 'cod' ? 'COD' : paymentMethod === 'card' ? 'Card' : `Wallet (${walletType})`,
+        paymentMethod: paymentMethod === 'cod' ? 'COD' : paymentMethod === 'card' ? 'Card' : paymentMethod === 'bank' ? 'Bank Deposit' : `Wallet (${walletType})`,
         status: 'Pending',
         createdAt: new Date(),
       };
@@ -379,11 +379,10 @@ export default function Checkout() {
                 <h4 className="text-sm font-semibold text-white mb-3">Payment Method</h4>
                 <div className="space-y-2">
 
-                  {/* COD */}
+                  {/* COD — active */}
                   {[
-                    { id: 'cod',    label: 'Cash on Delivery',         sub: 'Pay when you receive your order',    icon: <Banknote className="w-4 h-4" /> },
-                    { id: 'card',   label: 'Debit / Credit Card',       sub: 'Visa, Mastercard, UnionPay',         icon: <CreditCard className="w-4 h-4" /> },
-                    { id: 'wallet', label: 'Mobile Wallet',             sub: 'Easypaisa or JazzCash',              icon: <Wallet className="w-4 h-4" /> },
+                    { id: 'cod',  label: 'Cash on Delivery', sub: 'Pay when you receive your order', icon: <Banknote className="w-4 h-4" /> },
+                    { id: 'bank', label: 'Bank Deposit',      sub: 'Direct bank transfer',            icon: <CreditCard className="w-4 h-4" /> },
                   ].map((opt) => (
                     <label
                       key={opt.id}
@@ -407,6 +406,27 @@ export default function Checkout() {
                         <p className="text-xs text-gray-500">{opt.sub}</p>
                       </div>
                     </label>
+                  ))}
+
+                  {/* Card + Wallet — locked / coming soon */}
+                  {[
+                    { id: 'card',   label: 'Debit / Credit Card', sub: 'Visa, Mastercard, UnionPay', icon: <CreditCard className="w-4 h-4" /> },
+                    { id: 'wallet', label: 'Mobile Wallet',        sub: 'Easypaisa or JazzCash',      icon: <Wallet className="w-4 h-4" /> },
+                  ].map((opt) => (
+                    <div
+                      key={opt.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-gray-800 opacity-50 cursor-not-allowed select-none"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+                      <span className="text-gray-600">{opt.icon}</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-500">{opt.label}</p>
+                        <p className="text-xs text-gray-600">{opt.sub}</p>
+                      </div>
+                      <span className="text-[10px] font-semibold tracking-wider uppercase text-gray-600 border border-gray-700 px-2 py-0.5 rounded-full shrink-0">
+                        Coming Soon
+                      </span>
+                    </div>
                   ))}
                 </div>
 
@@ -518,6 +538,38 @@ export default function Checkout() {
                       {formErrors.walletPhone && <p className="text-red-400 text-xs mt-1">{formErrors.walletPhone}</p>}
                     </div>
                     <p className="text-xs text-gray-500">You will receive a payment request on your {walletType === 'easypaisa' ? 'Easypaisa' : 'JazzCash'} account.</p>
+                  </div>
+                )}
+
+                {/* Bank deposit details */}
+                {paymentMethod === 'bank' && (
+                  <div className="mt-3 p-4 bg-[#111] border border-gray-800 rounded-lg space-y-3">
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      Transfer the total amount to the account below and place your order. Your order will be processed once payment is confirmed.
+                    </p>
+                    <div className="space-y-2.5">
+                      {[
+                        { label: 'A/C Title', value: 'A.S Fragrance' },
+                        { label: 'A/C #',     value: '1234567890' },
+                        { label: 'IBAN #',    value: 'PK36MEZN0001234567890101' },
+                        { label: 'Bank',      value: 'Meezan Bank' },
+                      ].map(({ label, value }) => (
+                        <div key={label} className="py-2 border-b border-gray-800 last:border-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="text-xs text-gray-500 shrink-0 w-16">{label}</span>
+                            <button
+                              type="button"
+                              onClick={() => navigator.clipboard.writeText(value)}
+                              className="text-[10px] text-[#E5A95E] border border-[#E5A95E]/30 hover:border-[#E5A95E] px-2 py-0.5 rounded transition-colors shrink-0"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                          <span className="text-sm font-mono font-medium text-white break-all mt-1 block">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-yellow-500/80">Please include your name as the payment reference.</p>
                   </div>
                 )}
               </div>
