@@ -157,9 +157,9 @@ export const AppProvider = ({ children }) => {
   }, [user]);
 
   // --- Cart ---
-  const addToCart = useCallback((product) => {
+  const addToCart = useCallback((product, { silent = false } = {}) => {
     if (!requireAuth()) return;
-    toast.success('Added to cart!');
+    if (!silent) toast.success('Added to cart!');
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {

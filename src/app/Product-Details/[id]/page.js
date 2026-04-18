@@ -1,8 +1,9 @@
 'use client'
 
 import Image from "next/image"
-import { Star, Heart, ShoppingCart, ChevronLeft, ChevronRight, CheckCircle, Package, Lock } from "lucide-react"
+import { Star, Heart, ShoppingCart, ChevronLeft, ChevronRight, CheckCircle, Package, Zap } from "lucide-react"
 import { use, useContext, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { AppContext } from "@/context/Appcontext"
 import Card from "@/app/components/ProductCard"
 import Link from "next/link"
@@ -11,8 +12,8 @@ export default function ProductPage({ params }) {
   const resolvedParams = use(params)
   const productId = resolvedParams.id
 
-  const { user, loading, perfumesData, addToCart, toggleWishlist, isInWishlist, addToRecentlyViewed } = useContext(AppContext)
-  const isLoggedIn = !loading && !!user
+  const { perfumesData, addToCart, toggleWishlist, isInWishlist, addToRecentlyViewed } = useContext(AppContext)
+  const router = useRouter()
 
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
@@ -58,16 +59,21 @@ export default function ProductPage({ params }) {
     { label: 'Base Notes', value: product.baseNotes || product.fragranceNotes?.base },
   ].filter((n) => n.value)
 
+  const cartItem = {
+    id: product.id,
+    name: product.name,
+    price: Number(product.price),
+    image: images[0],
+    volume: product.volume || '30ml',
+  }
+
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: Number(product.price),
-        image: images[0],
-        volume: product.volume || '30ml',
-      })
-    }
+    for (let i = 0; i < quantity; i++) addToCart(cartItem)
+  }
+
+  const handleBuyNow = () => {
+    for (let i = 0; i < quantity; i++) addToCart(cartItem, { silent: true })
+    router.push('/Checkout')
   }
 
   const inStock = product.stock === undefined || product.stock > 0
@@ -228,27 +234,24 @@ export default function ProductPage({ params }) {
             </div>
 
             {/* CTA buttons */}
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-3 mb-6">
               <button
                 onClick={handleAddToCart}
                 disabled={!inStock}
-                className={`flex-1 flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                  isLoggedIn
-                    ? 'bg-[#E5A95E] hover:bg-[#d49a4f] text-black hover:shadow-lg hover:shadow-[#E5A95E]/20'
-                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                }`}
+                className="flex-1 flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl border border-[#E5A95E]/50 hover:border-[#E5A95E] text-[#E5A95E] hover:bg-[#E5A95E]/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {!inStock ? (
-                  'Out of Stock'
-                ) : isLoggedIn ? (
-                  <><ShoppingCart className="w-4 h-4" /> Add to Cart</>
-                ) : (
-                  <><Lock className="w-4 h-4" /> Sign In to Buy</>
-                )}
+                {inStock ? <><ShoppingCart className="w-4 h-4" /> Add to Cart</> : 'Out of Stock'}
+              </button>
+              <button
+                onClick={handleBuyNow}
+                disabled={!inStock}
+                className="flex-1 flex items-center justify-center gap-2 font-semibold py-3.5 rounded-xl bg-[#E5A95E] hover:bg-[#d49a4f] text-black transition-all hover:shadow-lg hover:shadow-[#E5A95E]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Zap className="w-4 h-4" /> Buy Now
               </button>
               <button
                 onClick={() => toggleWishlist(product)}
-                title={isLoggedIn ? (inWishlist ? 'Remove from wishlist' : 'Save to wishlist') : 'Sign in to save'}
+                title={inWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
                 className={`w-14 flex items-center justify-center rounded-xl border transition-all ${
                   inWishlist
                     ? 'bg-[#E5A95E]/10 border-[#E5A95E]/40 text-[#E5A95E]'
@@ -259,16 +262,6 @@ export default function ProductPage({ params }) {
                 <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
               </button>
             </div>
-
-            {/* Sign-in nudge shown when not logged in */}
-            {!isLoggedIn && !loading && (
-              <p className="text-xs text-gray-500 mb-4">
-                <Link href="/Sign-in" className="text-[#E5A95E] underline font-medium">Sign in</Link>
-                {' '}or{' '}
-                <Link href="/Sign-in" className="text-[#E5A95E] underline font-medium">create an account</Link>
-                {' '}to add items to your cart.
-              </p>
-            )}
 
             {/* Delivery info */}
             <div className="bg-[#0f0f0f] border border-gray-800 rounded-xl p-4 flex items-start gap-3">

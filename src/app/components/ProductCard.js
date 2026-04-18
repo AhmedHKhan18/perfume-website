@@ -1,25 +1,35 @@
 'use client'
-import { Star, Heart, ShoppingCart, Lock } from "lucide-react";
+import { Star, Heart, ShoppingCart, Zap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useContext } from "react";
+import { useRouter } from "next/navigation";
 import { AppContext } from "@/context/Appcontext";
 
 export default function Card({ products, index }) {
-  const { user, loading, addToCart, toggleWishlist, isInWishlist } = useContext(AppContext);
-  const wished    = isInWishlist(products.id);
-  const isLoggedIn = !loading && !!user;
+  const { addToCart, toggleWishlist, isInWishlist } = useContext(AppContext);
+  const router = useRouter();
+  const wished = isInWishlist(products.id);
+
+  const cartItem = {
+    id:     products.id,
+    name:   products.name,
+    price:  Number(products.price),
+    image:  products.imageUrl || products.image || '/placeholder.svg',
+    volume: products.volume || '30ml',
+  };
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({
-      id:     products.id,
-      name:   products.name,
-      price:  Number(products.price),
-      image:  products.imageUrl || products.image || '/placeholder.svg',
-      volume: products.volume || '30ml',
-    });
+    addToCart(cartItem);
+  };
+
+  const handleBuyNow = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(cartItem, { silent: true });
+    router.push('/Checkout');
   };
 
   const handleWishlist = (e) => {
@@ -35,6 +45,7 @@ export default function Card({ products, index }) {
       reviews:  products.reviews,
     });
   };
+
 
   return (
     <Link href={`/Product-Details/${products.id}`} className="block group card-shine">
@@ -52,7 +63,7 @@ export default function Card({ products, index }) {
           {/* Wishlist */}
           <button
             onClick={handleWishlist}
-            title={isLoggedIn ? (wished ? 'Remove from wishlist' : 'Add to wishlist') : 'Sign in to save'}
+            title={wished ? 'Remove from wishlist' : 'Add to wishlist'}
             className={`absolute top-3 right-3 w-8 h-8 flex items-center justify-center border transition-all duration-200 ${
               wished
                 ? 'bg-[#C9A96E] border-[#C9A96E] text-[#0a0a0a]'
@@ -62,21 +73,21 @@ export default function Card({ products, index }) {
             <Heart className={`w-3.5 h-3.5 ${wished ? 'fill-current' : ''}`} />
           </button>
 
-          {/* Add to cart — slides up */}
-          <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          {/* Action buttons — slides up */}
+          <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex">
             <button
               onClick={handleAddToCart}
-              title={isLoggedIn ? 'Add to cart' : 'Sign in to add to cart'}
-              className={`w-full py-3 text-[12px] font-semibold tracking-[0.12em] uppercase flex items-center justify-center gap-2 transition-colors ${
-                isLoggedIn
-                  ? 'bg-[#C9A96E] hover:bg-[#E2C68A] text-[#0a0a0a]'
-                  : 'bg-[#1a1a1a] hover:bg-[#222] text-[#888]'
-              }`}
+              title="Add to cart"
+              className="flex-1 py-3 text-[11px] font-semibold tracking-[0.1em] uppercase flex items-center justify-center gap-1.5 bg-[#1a1a1a] hover:bg-[#252525] text-[#C9A96E] border-t border-[#2a2a2a] transition-colors"
             >
-              {isLoggedIn
-                ? <><ShoppingCart className="w-3.5 h-3.5" /> Add to Cart</>
-                : <><Lock className="w-3.5 h-3.5" /> Sign In to Buy</>
-              }
+              <ShoppingCart className="w-3.5 h-3.5" /> Cart
+            </button>
+            <button
+              onClick={handleBuyNow}
+              title="Buy now"
+              className="flex-1 py-3 text-[11px] font-semibold tracking-[0.1em] uppercase flex items-center justify-center gap-1.5 bg-[#C9A96E] hover:bg-[#E2C68A] text-[#0a0a0a] transition-colors"
+            >
+              <Zap className="w-3.5 h-3.5" /> Buy Now
             </button>
           </div>
         </div>

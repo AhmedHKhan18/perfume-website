@@ -4,6 +4,7 @@ import { useEffect, useState, useContext, useRef } from 'react';
 import { Menu, X, Search, User, ShoppingCart, Heart, LogOut, ChevronDown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { AppContext } from '@/context/Appcontext';
+import CartSidebar from './CartSidebar';
 
 const NAV = [
   { name: 'Home',    href: '/' },
@@ -24,6 +25,7 @@ export default function Header() {
   const { cartCount, wishlistCount, user, handleLogout, perfumesData } = useContext(AppContext);
   const [scrolled, setScrolled]     = useState(false);
   const [menuOpen, setMenuOpen]     = useState(false);
+  const [cartOpen, setCartOpen]     = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [userOpen, setUserOpen]     = useState(false);
   const [query, setQuery]           = useState('');
@@ -185,8 +187,8 @@ export default function Header() {
             </Link>
 
             {/* Cart */}
-            <Link
-              href="/Cart"
+            <button
+              onClick={() => setCartOpen(true)}
               className="relative w-9 h-9 hidden lg:flex items-center justify-center text-[#888] hover:text-[#C9A96E] transition-colors rounded-lg hover:bg-white/5"
             >
               <ShoppingCart className="w-[18px] h-[18px]" />
@@ -195,7 +197,7 @@ export default function Header() {
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
-            </Link>
+            </button>
 
             {/* User */}
             <div ref={userRef} className="relative hidden lg:block">
@@ -240,6 +242,9 @@ export default function Header() {
         </div>
       </nav>
 
+      {/* ── Cart sidebar ── */}
+      <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />
+
       {/* ── Mobile drawer ── */}
       <div className={`fixed inset-0 z-[60] lg:hidden transition-all duration-300 ${menuOpen ? 'visible' : 'invisible'}`}>
         <div className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${menuOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setMenuOpen(false)} />
@@ -269,10 +274,13 @@ export default function Header() {
               <Heart className="w-5 h-5" />
               {wishlistCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#C9A96E] text-[#0a0a0a] text-[9px] font-bold rounded-full flex items-center justify-center">{wishlistCount}</span>}
             </Link>
-            <Link href="/Cart" onClick={() => setMenuOpen(false)} className="relative text-[#888] hover:text-[#C9A96E]">
+            <button
+              onClick={() => { setMenuOpen(false); setCartOpen(true); }}
+              className="relative text-[#888] hover:text-[#C9A96E]"
+            >
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#C9A96E] text-[#0a0a0a] text-[9px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>}
-            </Link>
+            </button>
             <Link href="/Sign-in" onClick={() => setMenuOpen(false)} className="text-[#888] hover:text-[#C9A96E]">
               <User className="w-5 h-5" />
             </Link>
