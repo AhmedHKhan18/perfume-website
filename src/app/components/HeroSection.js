@@ -55,7 +55,7 @@ export default function HeroSection() {
           src={mainperfume}
           alt="hero background"
           fill
-          className="object-cover object-center"
+          className="object-cover md:object-center object-right"
           priority
         />
         {/* dark overlay */}

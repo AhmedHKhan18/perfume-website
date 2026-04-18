@@ -268,6 +268,17 @@ export default function Header() {
                 {name}
               </Link>
             ))}
+            <button
+              onClick={() => { setMenuOpen(false); setCartOpen(true); }}
+              className="w-full text-left px-6 py-3 text-sm font-medium tracking-wider uppercase transition-colors text-[#888] hover:text-white flex items-center justify-between"
+            >
+              <span>Cart</span>
+              {cartCount > 0 && (
+                <span className="bg-[#C9A96E] text-[#0a0a0a] text-[10px] font-bold px-2 py-0.5 rounded-full leading-none">
+                  {cartCount}
+                </span>
+              )}
+            </button>
           </nav>
           <div className="px-6 py-5 border-t border-[#232323] flex items-center gap-5">
             <Link href="/Wishlist" onClick={() => setMenuOpen(false)} className="relative text-[#888] hover:text-[#C9A96E]">

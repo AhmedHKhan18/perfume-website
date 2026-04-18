@@ -1,5 +1,5 @@
 'use client'
-import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Tag } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, Tag, CreditCard, Wallet, Banknote, Lock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useContext, useState } from "react";
@@ -17,15 +17,30 @@ const COUPONS = {
 const SHIPPING_THRESHOLD = 2000
 const SHIPPING_FEE = 200
 
+const COUNTRIES = [
+  'Pakistan', 'Afghanistan', 'Australia', 'Bahrain', 'Bangladesh', 'Canada',
+  'China', 'Egypt', 'France', 'Germany', 'India', 'Indonesia', 'Iran', 'Iraq',
+  'Italy', 'Jordan', 'Kazakhstan', 'Kenya', 'Kuwait', 'Lebanon', 'Malaysia',
+  'Maldives', 'Morocco', 'Nepal', 'Netherlands', 'New Zealand', 'Nigeria',
+  'Oman', 'Philippines', 'Qatar', 'Russia', 'Saudi Arabia', 'Singapore',
+  'South Africa', 'South Korea', 'Spain', 'Sri Lanka', 'Sweden', 'Switzerland',
+  'Thailand', 'Turkey', 'Ukraine', 'United Arab Emirates', 'United Kingdom',
+  'United States', 'Yemen',
+]
+
 export default function Checkout() {
   const { user, loading, cart, removeFromCart, updateCartQuantity, clearCart } = useContext(AppContext);
 
   const [couponInput, setCouponInput] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
-  const [checkoutForm, setCheckoutForm] = useState({ name: '', email: '', phone: '', address: '', city: '', notes: '' });
+  const [checkoutForm, setCheckoutForm] = useState({ name: '', email: '', phone: '', address: '', apartment: '', city: '', country: 'Pakistan', postalCode: '', notes: '' });
   const [formErrors, setFormErrors] = useState({});
   const [placing, setPlacing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' | 'card' | 'wallet'
+  const [cardDetails, setCardDetails] = useState({ number: '', holder: '', expiry: '', cvv: '' });
+  const [walletType, setWalletType] = useState('easypaisa'); // 'easypaisa' | 'jazzcash'
+  const [walletPhone, setWalletPhone] = useState('');
 
   const subtotal = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
   const shipping = subtotal >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
@@ -52,11 +67,20 @@ export default function Checkout() {
   const validateForm = () => {
     const errors = {};
     if (!checkoutForm.name.trim()) errors.name = 'Full name is required';
+    if (!checkoutForm.email.trim()) errors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(checkoutForm.email)) errors.email = 'Enter a valid email';
     if (!checkoutForm.phone.trim()) errors.phone = 'Phone number is required';
     if (!checkoutForm.address.trim()) errors.address = 'Address is required';
     if (!checkoutForm.city.trim()) errors.city = 'City is required';
-    if (checkoutForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(checkoutForm.email)) {
-      errors.email = 'Enter a valid email';
+    if (!checkoutForm.country.trim()) errors.country = 'Country is required';
+    if (paymentMethod === 'card') {
+      if (!cardDetails.number.replace(/\s/g, '').match(/^\d{16}$/)) errors.cardNumber = 'Enter a valid 16-digit card number';
+      if (!cardDetails.holder.trim()) errors.cardHolder = 'Cardholder name is required';
+      if (!cardDetails.expiry.match(/^(0[1-9]|1[0-2])\/\d{2}$/)) errors.cardExpiry = 'Enter expiry as MM/YY';
+      if (!cardDetails.cvv.match(/^\d{3,4}$/)) errors.cardCvv = 'Enter a valid CVV';
+    }
+    if (paymentMethod === 'wallet') {
+      if (!walletPhone.trim().match(/^03\d{9}$/)) errors.walletPhone = 'Enter a valid Pakistani mobile number (03XXXXXXXXX)';
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -78,7 +102,7 @@ export default function Checkout() {
         discount,
         total,
         coupon: appliedCoupon || null,
-        paymentMethod: 'COD',
+        paymentMethod: paymentMethod === 'cod' ? 'COD' : paymentMethod === 'card' ? 'Card' : `Wallet (${walletType})`,
         status: 'Pending',
         createdAt: new Date(),
       };
@@ -258,13 +282,11 @@ export default function Checkout() {
             <div className="bg-[#0f0f0f] border border-gray-800 rounded-xl p-5">
               <h3 className="text-base font-bold mb-4">Delivery Details</h3>
               <div className="space-y-3">
+                {/* Name */}
                 {[
-                  { key: 'name',    placeholder: 'Full Name *',           type: 'text' },
-                  { key: 'phone',   placeholder: 'Phone Number *',        type: 'tel' },
-                  { key: 'email',   placeholder: 'Email (optional)',       type: 'email' },
-                  { key: 'address', placeholder: 'Street Address *',      type: 'text' },
-                  { key: 'city',    placeholder: 'City *',                type: 'text' },
-                  { key: 'notes',   placeholder: 'Order notes (optional)', type: 'text' },
+                  { key: 'name',  placeholder: 'Full Name *',    type: 'text' },
+                  { key: 'email', placeholder: 'Email *',         type: 'email' },
+                  { key: 'phone', placeholder: 'Phone Number *',  type: 'tel' },
                 ].map(({ key, placeholder, type }) => (
                   <div key={key}>
                     <input
@@ -279,14 +301,225 @@ export default function Checkout() {
                     {formErrors[key] && <p className="text-red-400 text-xs mt-1">{formErrors[key]}</p>}
                   </div>
                 ))}
+
+                {/* Country */}
+                <div>
+                  <select
+                    value={checkoutForm.country}
+                    onChange={(e) => setCheckoutForm((f) => ({ ...f, country: e.target.value }))}
+                    className={`w-full bg-[#111] border rounded-lg px-3 py-2.5 text-sm text-white outline-none transition-colors appearance-none ${
+                      formErrors.country ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                    }`}
+                  >
+                    {COUNTRIES.map((c) => (
+                      <option key={c} value={c} className="bg-[#111]">{c}</option>
+                    ))}
+                  </select>
+                  {formErrors.country && <p className="text-red-400 text-xs mt-1">{formErrors.country}</p>}
+                </div>
+
+                {/* Street Address */}
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Street Address *"
+                    value={checkoutForm.address}
+                    onChange={(e) => setCheckoutForm((f) => ({ ...f, address: e.target.value }))}
+                    className={`w-full bg-[#111] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors ${
+                      formErrors.address ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                    }`}
+                  />
+                  {formErrors.address && <p className="text-red-400 text-xs mt-1">{formErrors.address}</p>}
+                </div>
+
+                {/* Apartment */}
+                <input
+                  type="text"
+                  placeholder="Apartment, suite, etc. (optional)"
+                  value={checkoutForm.apartment}
+                  onChange={(e) => setCheckoutForm((f) => ({ ...f, apartment: e.target.value }))}
+                  className="w-full bg-[#111] border border-gray-700 focus:border-[#E5A95E]/50 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors"
+                />
+
+                {/* City + Postal Code */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="City *"
+                      value={checkoutForm.city}
+                      onChange={(e) => setCheckoutForm((f) => ({ ...f, city: e.target.value }))}
+                      className={`w-full bg-[#111] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors ${
+                        formErrors.city ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                      }`}
+                    />
+                    {formErrors.city && <p className="text-red-400 text-xs mt-1">{formErrors.city}</p>}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Postal Code (optional)"
+                    value={checkoutForm.postalCode}
+                    onChange={(e) => setCheckoutForm((f) => ({ ...f, postalCode: e.target.value }))}
+                    className="w-full bg-[#111] border border-gray-700 focus:border-[#E5A95E]/50 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors"
+                  />
+                </div>
+
+                {/* Notes */}
+                <input
+                  type="text"
+                  placeholder="Order notes (optional)"
+                  value={checkoutForm.notes}
+                  onChange={(e) => setCheckoutForm((f) => ({ ...f, notes: e.target.value }))}
+                  className="w-full bg-[#111] border border-gray-700 focus:border-[#E5A95E]/50 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none transition-colors"
+                />
               </div>
 
-              <div className="mt-4 p-3 bg-[#111] border border-gray-800 rounded-lg flex items-center gap-2">
-                <span className="text-lg">💵</span>
-                <div>
-                  <p className="text-sm font-medium text-white">Cash on Delivery</p>
-                  <p className="text-xs text-gray-500">Pay when you receive your order</p>
+              {/* Payment method selector */}
+              <div className="mt-5">
+                <h4 className="text-sm font-semibold text-white mb-3">Payment Method</h4>
+                <div className="space-y-2">
+
+                  {/* COD */}
+                  {[
+                    { id: 'cod',    label: 'Cash on Delivery',         sub: 'Pay when you receive your order',    icon: <Banknote className="w-4 h-4" /> },
+                    { id: 'card',   label: 'Debit / Credit Card',       sub: 'Visa, Mastercard, UnionPay',         icon: <CreditCard className="w-4 h-4" /> },
+                    { id: 'wallet', label: 'Mobile Wallet',             sub: 'Easypaisa or JazzCash',              icon: <Wallet className="w-4 h-4" /> },
+                  ].map((opt) => (
+                    <label
+                      key={opt.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        paymentMethod === opt.id
+                          ? 'border-[#E5A95E]/60 bg-[#E5A95E]/5'
+                          : 'border-gray-800 hover:border-gray-600'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={opt.id}
+                        checked={paymentMethod === opt.id}
+                        onChange={() => setPaymentMethod(opt.id)}
+                        className="accent-[#E5A95E]"
+                      />
+                      <span className={paymentMethod === opt.id ? 'text-[#E5A95E]' : 'text-gray-400'}>{opt.icon}</span>
+                      <div>
+                        <p className="text-sm font-medium text-white">{opt.label}</p>
+                        <p className="text-xs text-gray-500">{opt.sub}</p>
+                      </div>
+                    </label>
+                  ))}
                 </div>
+
+                {/* Card details */}
+                {paymentMethod === 'card' && (
+                  <div className="mt-3 space-y-3 p-4 bg-[#111] border border-gray-800 rounded-lg">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Lock className="w-3.5 h-3.5 text-green-400" />
+                      <span className="text-xs text-green-400">Secured & encrypted</span>
+                    </div>
+                    {/* Card number */}
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Card Number"
+                        maxLength={19}
+                        value={cardDetails.number}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
+                          const fmt = raw.match(/.{1,4}/g)?.join(' ') || raw;
+                          setCardDetails((d) => ({ ...d, number: fmt }));
+                        }}
+                        className={`w-full bg-[#0a0a0a] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none tracking-widest ${
+                          formErrors.cardNumber ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                        }`}
+                      />
+                      {formErrors.cardNumber && <p className="text-red-400 text-xs mt-1">{formErrors.cardNumber}</p>}
+                    </div>
+                    {/* Cardholder */}
+                    <div>
+                      <input
+                        type="text"
+                        placeholder="Cardholder Name"
+                        value={cardDetails.holder}
+                        onChange={(e) => setCardDetails((d) => ({ ...d, holder: e.target.value }))}
+                        className={`w-full bg-[#0a0a0a] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none ${
+                          formErrors.cardHolder ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                        }`}
+                      />
+                      {formErrors.cardHolder && <p className="text-red-400 text-xs mt-1">{formErrors.cardHolder}</p>}
+                    </div>
+                    {/* Expiry + CVV */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="MM/YY"
+                          maxLength={5}
+                          value={cardDetails.expiry}
+                          onChange={(e) => {
+                            let v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                            if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2);
+                            setCardDetails((d) => ({ ...d, expiry: v }));
+                          }}
+                          className={`w-full bg-[#0a0a0a] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none ${
+                            formErrors.cardExpiry ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                          }`}
+                        />
+                        {formErrors.cardExpiry && <p className="text-red-400 text-xs mt-1">{formErrors.cardExpiry}</p>}
+                      </div>
+                      <div>
+                        <input
+                          type="password"
+                          placeholder="CVV"
+                          maxLength={4}
+                          value={cardDetails.cvv}
+                          onChange={(e) => setCardDetails((d) => ({ ...d, cvv: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                          className={`w-full bg-[#0a0a0a] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none ${
+                            formErrors.cardCvv ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                          }`}
+                        />
+                        {formErrors.cardCvv && <p className="text-red-400 text-xs mt-1">{formErrors.cardCvv}</p>}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Wallet details */}
+                {paymentMethod === 'wallet' && (
+                  <div className="mt-3 space-y-3 p-4 bg-[#111] border border-gray-800 rounded-lg">
+                    {/* Wallet type toggle */}
+                    <div className="flex gap-2">
+                      {['easypaisa', 'jazzcash'].map((w) => (
+                        <button
+                          key={w}
+                          type="button"
+                          onClick={() => setWalletType(w)}
+                          className={`flex-1 py-2 rounded-lg text-sm font-semibold border transition-colors capitalize ${
+                            walletType === w
+                              ? 'bg-[#E5A95E] border-[#E5A95E] text-black'
+                              : 'border-gray-700 text-gray-400 hover:border-gray-500'
+                          }`}
+                        >
+                          {w === 'easypaisa' ? 'Easypaisa' : 'JazzCash'}
+                        </button>
+                      ))}
+                    </div>
+                    {/* Wallet phone */}
+                    <div>
+                      <input
+                        type="tel"
+                        placeholder="Registered mobile number (03XXXXXXXXX)"
+                        value={walletPhone}
+                        onChange={(e) => setWalletPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                        className={`w-full bg-[#0a0a0a] border rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none ${
+                          formErrors.walletPhone ? 'border-red-500' : 'border-gray-700 focus:border-[#E5A95E]/50'
+                        }`}
+                      />
+                      {formErrors.walletPhone && <p className="text-red-400 text-xs mt-1">{formErrors.walletPhone}</p>}
+                    </div>
+                    <p className="text-xs text-gray-500">You will receive a payment request on your {walletType === 'easypaisa' ? 'Easypaisa' : 'JazzCash'} account.</p>
+                  </div>
+                )}
               </div>
 
               <button
