@@ -19,19 +19,13 @@ const jost = Jost({
 });
 
 export const metadata = {
-  title: "A.S Fragrance | Luxury Perfumes",
+  title: "Luxury Perfumes by A.S Fragrance",
   description: "Experience the essence of luxury and victory with A.S Fragrance",
-  icons: {
-    icon: '/logo.jpg',
-  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
-      </head>
       <body className={`${playfair.variable} ${jost.variable} font-jost antialiased bg-[#0a0a0a] text-white`}>
         <AppProvider>
           <Header />

@@ -5,6 +5,7 @@ import { Menu, X, Search, User, ShoppingCart, Heart, LogOut, ChevronDown } from 
 import { useRouter, usePathname } from 'next/navigation';
 import { AppContext } from '@/context/Appcontext';
 import CartSidebar from './CartSidebar';
+import Image from 'next/image';
 
 const NAV = [
   { name: 'Home',    href: '/' },
@@ -96,8 +97,8 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-5 md:px-8 h-full flex items-center justify-between gap-6">
 
           {/* Logo */}
-          <Link href="/" className="font-playfair text-xl md:text-2xl font-bold tracking-[0.18em] text-[#C9A96E] shrink-0 hover:text-[#E2C68A] transition-colors">
-            A.S FRAGRANCE
+          <Link href="/" className="flex items-center shrink-0">
+            <Image src="/gold-logo.png" alt="A.S Fragrance" width={44} height={44} className="object-contain" />
           </Link>
 
           {/* Desktop nav links — centred */}
@@ -250,7 +251,7 @@ export default function Header() {
         <div className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${menuOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => setMenuOpen(false)} />
         <div className={`absolute right-0 top-0 h-full w-72 bg-[#0f0f0f] border-l border-[#232323] flex flex-col transition-transform duration-300 ${menuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
           <div className="flex items-center justify-between px-6 h-16 border-b border-[#232323] shrink-0">
-            <span className="font-playfair text-[#C9A96E] font-bold tracking-wider">A.S FRAGRANCE</span>
+            <Image src="/gold-logo.png" alt="A.S Fragrance" width={36} height={36} className="object-contain" />
             <button onClick={() => setMenuOpen(false)} className="text-[#666] hover:text-white">
               <X size={20} />
             </button>
