@@ -158,7 +158,6 @@ export const AppProvider = ({ children }) => {
 
   // --- Cart ---
   const addToCart = useCallback((product, { silent = false } = {}) => {
-    if (!requireAuth()) return;
     if (!silent) toast.success('Added to cart!');
     setCart((prev) => {
       const existing = prev.find((item) => item.id === product.id);
@@ -169,7 +168,7 @@ export const AppProvider = ({ children }) => {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
-  }, [requireAuth]);
+  }, []);
 
   const removeFromCart = useCallback((productId) => {
     setCart((prev) => prev.filter((item) => item.id !== productId));
@@ -188,7 +187,6 @@ export const AppProvider = ({ children }) => {
 
   // --- Wishlist ---
   const toggleWishlist = useCallback((product) => {
-    if (!requireAuth()) return;
     const exists = wishlist.some((item) => item.id === product.id);
     if (exists) {
       toast.info('Removed from wishlist');
@@ -197,7 +195,7 @@ export const AppProvider = ({ children }) => {
       toast.success('Added to wishlist!');
       setWishlist((prev) => [...prev, product]);
     }
-  }, [requireAuth, wishlist]);
+  }, [wishlist]);
 
   const isInWishlist = useCallback(
     (productId) => wishlist.some((item) => item.id === productId),
